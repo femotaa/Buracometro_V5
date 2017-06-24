@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <ImageButton
+
+            android:layout_width="150dip"
+            android:layout_height="150dip"
+            android:layout_marginTop="10dip"
+            android:layout_marginLeft="18dip"
+            android:id="@+id/btnRegistrados"
+            android:background="@drawable/btn_registros_xml"
+            android:onClick="mudarTelaRegistrados"
+            android:contentDescription="@string/app_name">
+
+        </ImageButton>
+
+        <ImageButton
+            android:layout_width="150dip"
+            android:layout_height="150dip"
+            android:id="@+id/btnRecentes"
+            android:layout_marginRight="18dip"
+            android:layout_marginTop="10dip"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/btn_recentes_xml"
+            android:onClick="mudarTelaRecentes"
+            android:contentDescription="@string/app_name">
+
+        </ImageButton>
+
+        <ImageButton
+            android:layout_width="150dip"
+            android:layout_height="150dip"
+            android:layout_marginTop="10dip"
+            android:layout_marginLeft="18dip"
+            android:id="@+id/btnAreasCriticas"
+            android:layout_below="@+id/btnRegistrados"
+            android:background="@drawable/btn_criticos_xml"
+            android:onClick="mudarTelaCriticos"
+            android:contentDescription="@string/app_name">
+
+        </ImageButton>
+
+        <ImageButton
+            android:layout_width="145dip"
+            android:layout_height="145dip"
+            android:id="@+id/btnEstatisticas"
+            android:layout_marginRight="18dip"
+            android:layout_marginTop="10dip"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/btnRecentes"
+            android:background="@drawable/btn_estatisticas_xml"
+            android:onClick="mudarTelaEstatisticas"
+            android:contentDescription="@string/app_name">
+
+        </ImageButton>
+
+        <ToggleButton
+            android:layout_width="150dip"
+            android:layout_height="090dip"
+            android:id="@+id/btnBuracometro"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="50dip"
+            android:background="@drawable/btn_ligar2"
+            android:textOn=""
+            android:textOff="">
+
+        </ToggleButton>
+
+        <Button
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:id="@+id/btnManual"
+            android:textOn="+"
+            android:background="@drawable/btn_manual_buraco"
+            android:layout_marginLeft="20dp"
+            android:layout_marginBottom="20dp"
+            android:layout_alignBottom="@+id/btnBuracometro"
+            android:layout_toRightOf="@+id/btnBuracometro"
+            android:layout_toEndOf="@+id/btnBuracometro"
+            android:visibility="visible">
+
+        </Button>
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:id="@+id/barra_progress_achado"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:visibility="invisible"
+            android:layout_below="@+id/btnAreasCriticas"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:id="@+id/texto_ligado"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:text="Buracometro ligado"
+            android:textSize="18sp"
+
+            android:textColor="#ffffff"
+            android:visibility="invisible"
+            android:layout_above="@+id/barra_progress_achado"
+            android:layout_centerHorizontal="true" />
+
+
+    </RelativeLayout>
+
+
+
+</FrameLayout>

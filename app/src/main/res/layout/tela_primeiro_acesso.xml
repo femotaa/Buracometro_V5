@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/tela_menu_background">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#88000000"
+            android:text="Estamos sincronizando seus dados com o servidor"
+            android:id="@+id/textoSinc"
+            android:layout_marginTop="110dp"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"/>
+
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleHorizontal"
+            android:id="@+id/circularProgressbar1"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:indeterminate="false"
+            android:progress="0"
+            android:max="100"
+            android:secondaryProgress="100"
+            android:progressDrawable="@drawable/barra_progresso_circular"
+            android:layout_below="@+id/textoSinc"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="-10dp"/>
+
+
+        <ImageButton
+            android:layout_width="127dip"
+            android:layout_height="127dip"
+            android:id="@+id/btnSincronizar"
+            android:background="@drawable/btn_sincronizar"
+            android:layout_below="@+id/textoSinc"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="28dp"
+            android:textAlignment="center"
+            android:contentDescription="@string/app_name">
+
+        </ImageButton>
+
+
+        <TextView
+            android:id="@+id/textoSinc2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#88000000"
+            android:text="Por favor, aguarde um momento..."
+            android:layout_below="@+id/textoSinc"
+            android:layout_marginTop="190dp"
+            android:layout_centerHorizontal="true"/>
+
+
+</RelativeLayout>

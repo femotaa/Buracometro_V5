@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="#4a0d0d0d">
+
+    <LinearLayout
+        android:layout_width="04dip"
+        android:layout_height="65dip"
+        android:orientation="vertical"
+        android:id="@+id/linearLayout">
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/thumbnail"
+        android:layout_width="2dip"
+        android:layout_height="50dip"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/linearLayout"
+        android:layout_toEndOf="@+id/linearLayout"
+        android:layout_marginRight="05dip"
+        android:layout_marginEnd="05dip"
+        android:layout_marginLeft="3dip"
+        android:layout_marginStart="3dip"
+        android:layout_marginTop="2.5dip">
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/textoEnderecoCriticos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/thumbnail"
+        android:layout_toRightOf="@+id/thumbnail"
+        android:layout_toEndOf="@+id/thumbnail"
+        android:textColor="#e9e9e9"
+        android:typeface="sans"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:layout_marginTop="4.5dp"
+        android:layout_marginBottom="2dp"/>
+
+    <TextView
+        android:id="@+id/Cidade"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textoEnderecoCriticos"
+        android:textColor="#e9e9e9"
+        android:textSize="10sp"
+        android:layout_marginTop="1dip"
+        android:layout_toRightOf="@+id/thumbnail"
+        android:layout_toEndOf="@+id/thumbnail"
+        android:text="Cidade: "
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/textoCidadeCriticos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textoEnderecoCriticos"
+        android:textColor="#e9e9e9"
+        android:textSize="10sp"
+        android:layout_marginTop="1dip"
+        android:layout_toRightOf="@+id/Cidade"
+        android:layout_toEndOf="@+id/Cidade"/>
+
+    <TextView
+        android:id="@+id/estado"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textoEnderecoCriticos"
+        android:textColor="#e9e9e9"
+        android:textSize="10sp"
+        android:layout_marginTop="1dip"
+        android:layout_toRightOf="@+id/textoCidadeCriticos"
+        android:layout_toEndOf="@+id/textoCidadeCriticos"
+        android:text="Estado: "
+        android:textStyle="bold"
+        android:layout_marginLeft="32dp"
+        android:layout_marginStart="32dp"/>
+
+    <TextView
+        android:id="@+id/textoEstadoCriticos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textoEnderecoCriticos"
+        android:textColor="#e9e9e9"
+        android:textSize="10sp"
+        android:layout_marginTop="1dip"
+        android:layout_toRightOf="@+id/estado"
+        android:layout_toEndOf="@+id/estado"/>
+
+
+    <TextView
+        android:id="@+id/Data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textoCidadeCriticos"
+        android:textColor="#e9e9e9"
+        android:textSize="10sp"
+        android:layout_marginTop="1dip"
+        android:layout_toRightOf="@+id/thumbnail"
+        android:layout_toEndOf="@+id/thumbnail"
+        android:text="Data: "
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/textoDataCriticos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textoCidadeCriticos"
+        android:textColor="#e9e9e9"
+        android:textSize="10sp"
+        android:layout_marginTop="1dip"
+        android:layout_toRightOf="@+id/Data"
+        android:layout_toEndOf="@+id/Data"/>
+
+    <TextView
+        android:id="@+id/Ocorrencias"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#e9e9e9"
+        android:textSize="10sp"
+        android:text="Registros: "
+        android:textStyle="bold"
+        android:layout_alignTop="@+id/textoDataCriticos"
+        android:layout_toRightOf="@+id/textoDataCriticos"
+        android:layout_toEndOf="@+id/textoDataCriticos"
+        android:visibility="invisible"
+        android:layout_marginLeft="24dp"
+        android:layout_marginStart="24dp"/>
+
+    <TextView
+        android:id="@+id/textoOcorrencias"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#e9e9e9"
+        android:textSize="10sp"
+        android:layout_alignTop="@+id/textoDataCriticos"
+        android:layout_toRightOf="@+id/textoDataCriticos"
+        android:visibility="invisible"
+        android:layout_toEndOf="@+id/Ocorrencias"/>
+
+    <ImageButton
+        android:id="@+id/btnOpcoesCriticos"
+        android:layout_width="30dp"
+        android:layout_height="20dp"
+        android:padding="20dp"
+        android:layout_marginRight="07dip"
+        android:layout_marginEnd="07dip"
+        android:background="@drawable/opcoes_da_lista2_transp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:contentDescription="@string/app_name"/>
+
+</RelativeLayout>
