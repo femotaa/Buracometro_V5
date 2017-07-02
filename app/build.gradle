@@ -21,11 +21,18 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:25.3.0'
-    compile 'com.android.support:design:25.3.0'
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:recyclerview-v7:25.3.0'
-    compile 'com.github.orangegangsters:swipy:1.2.3@aar'
-    compile 'com.google.android.gms:play-services-maps:9.8.00'
     compile files('libs/ksoap2-android-assembly-3.3.0-jar-with-dependencies.jar')
+
+    compile 'com.android.support:appcompat-v7:25.2.0'
+    compile 'com.android.support:design:25.3.0'
+    compile 'com.pusher:pusher-java-client:1.4.0'
+    compile 'com.android.support:recyclerview-v7:25.3.0'
+    compile 'com.google.android.gms:play-services:11.0.1'
+    compile 'com.github.orangegangsters:swipy:1.2.3@aar'
+    compile 'com.google.firebase:firebase-database:11.0.1'
+    testCompile 'junit:junit:4.12'
 }
+
+
+
+apply plugin: 'com.google.gms.google-services'

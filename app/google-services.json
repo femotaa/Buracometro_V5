@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "302012636783",
+    "firebase_url": "https://buracometrov5-1493768467656.firebaseio.com",
+    "project_id": "buracometrov5-1493768467656",
+    "storage_bucket": "buracometrov5-1493768467656.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:302012636783:android:c39468ff24d483e4",
+        "android_client_info": {
+          "package_name": "com.example.felipe.buracometro_v5"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "302012636783-2jm5elbk059n0qavq0p0ft14fmpparh7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.felipe.buracometro_v5",
+            "certificate_hash": "f3d354bb1740fdaff0a7c6725e12bdaf67adf001"
+          }
+        },
+        {
+          "client_id": "302012636783-le0eunv6bhudu91fitrcvbj1ipvquoqr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcKnNBc-j16ZdulmuDDDoTAuoytr3Ba7M"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "302012636783-le0eunv6bhudu91fitrcvbj1ipvquoqr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

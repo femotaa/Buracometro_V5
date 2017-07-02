@@ -4,7 +4,6 @@ package com.example.felipe.buracometro_v5.fragments;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -25,7 +24,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TabHost;
-import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
@@ -88,6 +86,7 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
     GoogleMap googleMap;
     MapView mMapView;
+
 
     TextView textoViewFlip;
     ImageView imgViewFlip;
@@ -153,6 +152,8 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
         daoLocal = new BuracoLocalDao(view.getContext());
 
         listarRegistros();
+
+
 
         return view;
     }
@@ -381,7 +382,7 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
                 if(inicializadoRegistroAberto == true && listaRegistrosAberto.isEmpty()){
                     adapterListaRegistroAbertos();
                     listaRecycleRegistros.setAdapter(adapter);
-                    msgListaVazia("Registro Abertos");
+                    msgListaVazia("Registro Abertos neste dispositivo");
 
                 }else{
                     adapterListaRegistroAbertos();

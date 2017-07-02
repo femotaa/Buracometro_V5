@@ -4,19 +4,13 @@ import android.util.Log;
 
 import com.example.felipe.buracometro_v5.modelo.Buraco;
 import com.example.felipe.buracometro_v5.modelo.DadosEstatisticos;
-
-import java.io.IOException;
-import java.net.ConnectException;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Vector;
 import org.ksoap2.SoapEnvelope;
-import org.ksoap2.SoapFault;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapPrimitive;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
-import org.xmlpull.v1.XmlPullParserException;
 
 
 public class BuracoWebDao {
@@ -41,11 +35,6 @@ public class BuracoWebDao {
     private static final String METODO_REABRIR                  = "reabrirBuraco";
     private static final String METODO_BUSCARTOTALRECENTES      = "buscaTotalRecentes";
     private static final String METODO_BUSCARTOTALHOJE          = "buscaTotalAbertosHoje";
-
-//    private static final String METODO_ATUALIZAR                = "atualizarBuraco";
-//    private static final String METODO_BUSCATODOS               = "buscarTodosBuracos";
-//    private static final String METODO_BUSCARPORID              = "buscarBuracoPorId";
-
 
 
 

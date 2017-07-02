@@ -1,5 +1,6 @@
 package com.example.felipe.buracometro_v5.activities;
 
+import android.graphics.Color;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 
 import com.example.felipe.buracometro_v5.R;
 import com.example.felipe.buracometro_v5.fragments.TelaConfiguracoes;
@@ -23,6 +25,7 @@ import com.google.android.gms.maps.MapView;
 
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -52,6 +55,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
             }
         }).start();
+
+
     }
 
 
