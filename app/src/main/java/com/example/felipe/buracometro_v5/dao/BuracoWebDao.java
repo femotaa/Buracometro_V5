@@ -23,8 +23,8 @@ public class BuracoWebDao {
     private static final String METODO_EXCLUIRPORIDENTIFICADOR  = "excluirBuracoPorIdentificador";
     private static final String METODO_BUSCARRECENTES           = "buscarBuracosRecentes";
     private static final String METODO_BUSCARTAMPADOS           = "buscarBuracosTampados";
-    private static final String METODO_BUSCARPORIDENTIFICADOR   = "buscarBuracoPorIdentificador";
     private static final String METODO_BUSCARMAISCRITICOS       = "buscarMaisCriticos";
+    private static final String METODO_BUSCARPORIDENTIFICADOR   = "buscarBuracoPorIdentificador";
     private static final String METODO_BUSCARTOTALBURACOS       = "buscaTotalDeBuracos";
     private static final String METODO_BUSCARTOTALTAMPADOS      = "buscaTotalBuracosTampados";
     private static final String METODO_BUSCARCIDADEMAIS         = "buscaCidadeMaisRegistrada";
@@ -55,11 +55,10 @@ public class BuracoWebDao {
         bura.addProperty("cidade",          buraco.getCidade());
         bura.addProperty("data_Registro",   buraco.getData_Registro());
         bura.addProperty("estado",          buraco.getEstado());
-        bura.addProperty("id",              buraco.getId());
+        bura.addProperty("id",              buraco.getIdBuraco());
         bura.addProperty("rua",             buraco.getRua());
         bura.addProperty("latitude",        buraco.getLatitude());
         bura.addProperty("longitude",       buraco.getLongitude());
-        bura.addProperty("identificador",   buraco.getIdentificador());
         bura.addProperty("statusBuraco",    buraco.getStatusBuraco());
         bura.addProperty("dataTampado",     buraco.getDataTampado());
 
@@ -107,11 +106,10 @@ public class BuracoWebDao {
         bura.addProperty("cidade",          buraco.getCidade());
         bura.addProperty("data_Registro",   buraco.getData_Registro());
         bura.addProperty("estado",          buraco.getEstado());
-        bura.addProperty("id",              buraco.getId());
+        bura.addProperty("id",              buraco.getIdBuraco());
         bura.addProperty("rua",             buraco.getRua());
         bura.addProperty("latitude",        buraco.getLatitude());
         bura.addProperty("longitude",       buraco.getLongitude());
-        bura.addProperty("identificador",   buraco.getIdentificador());
         bura.addProperty("statusBuraco",    buraco.getStatusBuraco());
         bura.addProperty("dataTampado",     buraco.getDataTampado());
 
@@ -160,11 +158,10 @@ public class BuracoWebDao {
         bura.addProperty("cidade",          buraco.getCidade());
         bura.addProperty("data_Registro",   buraco.getData_Registro());
         bura.addProperty("estado",          buraco.getEstado());
-        bura.addProperty("id",              buraco.getId());
+        bura.addProperty("id",              buraco.getIdBuraco());
         bura.addProperty("rua",             buraco.getRua());
         bura.addProperty("latitude",        buraco.getLatitude());
         bura.addProperty("longitude",       buraco.getLongitude());
-        bura.addProperty("identificador",   buraco.getIdentificador());
         bura.addProperty("statusBuraco",    buraco.getStatusBuraco());
         bura.addProperty("dataTampado",     buraco.getDataTampado());
 
@@ -211,11 +208,10 @@ public class BuracoWebDao {
         bura.addProperty("cidade",          buraco.getCidade());
         bura.addProperty("data_Registro",   buraco.getData_Registro());
         bura.addProperty("estado",          buraco.getEstado());
-        bura.addProperty("id",              buraco.getId());
+        bura.addProperty("id",              buraco.getIdBuraco());
         bura.addProperty("rua",             buraco.getRua());
         bura.addProperty("latitude",        buraco.getLatitude());
         bura.addProperty("longitude",       buraco.getLongitude());
-        bura.addProperty("identificador",   buraco.getIdentificador());
 
         //Passagem de objeto espelho para objeto SOAP que utiliza os metodos do WEBSERVICE
         excluirBuraco.addSoapObject(bura);
@@ -309,7 +305,7 @@ public class BuracoWebDao {
             {
                 Buraco bura = new Buraco();
 //                bura.setId(Integer.parseInt(soapObject.getProperty("id").toString()));
-                bura.setIdBuraco(Integer.parseInt(soapObject.getProperty("id").toString()));
+                bura.setIdBuraco(soapObject.getProperty("id").toString());
                 bura.setRua(soapObject.getProperty("rua").toString());
                 bura.setBairro(soapObject.getProperty("bairro").toString());
                 bura.setCidade(soapObject.getProperty("cidade").toString());
@@ -317,14 +313,12 @@ public class BuracoWebDao {
                 bura.setData_Registro(soapObject.getProperty("data_Registro").toString());
                 bura.setLatitude(soapObject.getProperty("latitude").toString());
                 bura.setLongitude(soapObject.getProperty("longitude").toString());
-                bura.setIdentificador(soapObject.getProperty("identificador").toString());
                 bura.setStatusBuraco(soapObject.getProperty("statusBuraco").toString());
                 try{
                     bura.setDataTampado(soapObject.getProperty("dataTampado").toString());
                 }catch(Exception e){
 
                 }
-                bura.setId(Integer.parseInt(soapObject.getProperty("qtdReabertos").toString()));
 
                 lista.add(bura);
             }
@@ -370,7 +364,7 @@ public class BuracoWebDao {
 
                     Buraco bura = new Buraco();
 //                    bura.setId(Integer.parseInt(soapObject.getProperty("id").toString()));
-                    bura.setIdBuraco(Integer.parseInt(soapObject.getProperty("id").toString()));
+                    bura.setIdBuraco(soapObject.getProperty("id").toString());
                     bura.setRua(soapObject.getProperty("rua").toString());
                     bura.setBairro(soapObject.getProperty("bairro").toString());
                     bura.setCidade(soapObject.getProperty("cidade").toString());
@@ -378,9 +372,7 @@ public class BuracoWebDao {
                     bura.setData_Registro(soapObject.getProperty("data_Registro").toString());
                     bura.setLatitude(soapObject.getProperty("latitude").toString());
                     bura.setLongitude(soapObject.getProperty("longitude").toString());
-                    bura.setIdentificador(soapObject.getProperty("identificador").toString());
                     bura.setStatusBuraco(soapObject.getProperty("statusBuraco").toString());
-                    bura.setId(Integer.parseInt(soapObject.getProperty("qtdReabertos").toString()));
 
                     lista.add(bura);
 
@@ -430,7 +422,7 @@ public class BuracoWebDao {
 
                     Buraco bura = new Buraco();
 //                    bura.setId(Integer.parseInt(soapObject.getProperty("id").toString()));
-                    bura.setIdBuraco(Integer.parseInt(soapObject.getProperty("id").toString()));
+                    bura.setIdBuraco(soapObject.getProperty("id").toString());
                     bura.setRua(soapObject.getProperty("rua").toString());
                     bura.setBairro(soapObject.getProperty("bairro").toString());
                     bura.setCidade(soapObject.getProperty("cidade").toString());
@@ -438,10 +430,8 @@ public class BuracoWebDao {
                     bura.setData_Registro(soapObject.getProperty("data_Registro").toString());
                     bura.setLatitude(soapObject.getProperty("latitude").toString());
                     bura.setLongitude(soapObject.getProperty("longitude").toString());
-                    bura.setIdentificador(soapObject.getProperty("identificador").toString());
                     bura.setStatusBuraco(soapObject.getProperty("statusBuraco").toString());
                     bura.setDataTampado(soapObject.getProperty("dataTampado").toString());
-                    bura.setId(Integer.parseInt(soapObject.getProperty("qtdReabertos").toString()));
 
                     lista.add(bura);
 
@@ -487,7 +477,7 @@ public class BuracoWebDao {
             {
                 Buraco bura = new Buraco();
 //                bura.setId(Integer.parseInt(soapObject.getProperty("id").toString()));
-                bura.setIdBuraco(Integer.parseInt(soapObject.getProperty("id").toString()));
+                bura.setIdBuraco(soapObject.getProperty("id").toString());
                 bura.setRua(soapObject.getProperty("rua").toString());
                 bura.setBairro(soapObject.getProperty("bairro").toString());
                 bura.setCidade(soapObject.getProperty("cidade").toString());
@@ -495,10 +485,8 @@ public class BuracoWebDao {
                 bura.setData_Registro(soapObject.getProperty("data_Registro").toString());
                 bura.setLatitude(soapObject.getProperty("latitude").toString());
                 bura.setLongitude(soapObject.getProperty("longitude").toString());
-                bura.setIdentificador(soapObject.getProperty("identificador").toString());
                 bura.setStatusBuraco(soapObject.getProperty("statusBuraco").toString());
 //                bura.setDataTampado(soapObject.getProperty("dataTampado").toString());
-                bura.setId(Integer.parseInt(soapObject.getProperty("qtdReabertos").toString()));
                 bura.setQtdOcorrencia(Integer.parseInt(soapObject.getProperty("qtdOcorrencia").toString()));
 
                 lista.add(bura);

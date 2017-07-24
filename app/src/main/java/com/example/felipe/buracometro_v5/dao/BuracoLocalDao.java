@@ -68,7 +68,6 @@ public class BuracoLocalDao extends SQLiteOpenHelper {
         valores.put("data_registro", buraco.getData_Registro());
         valores.put("latitude", buraco.getLatitude());
         valores.put("longitude", buraco.getLongitude());
-        valores.put("identificador", buraco.getIdentificador());
         valores.put("qtdocorrencia", 1);
         valores.put("status", buraco.getStatusBuraco());
         valores.put("dataTampado", buraco.getDataTampado());
@@ -102,7 +101,7 @@ public class BuracoLocalDao extends SQLiteOpenHelper {
         if(cursor.moveToFirst()) {
             do{
 
-                buraco.setId(cursor.getInt(0));
+//                buraco.setId(cursor.getInt(0));
                 bura.setStatusBuraco(cursor.getString(1));
                 status = cursor.getString(1);
 
@@ -168,7 +167,7 @@ public class BuracoLocalDao extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getWritableDatabase();
 //            String queryAtualizarQtd = "UPDATE buraco SET status = 'Tampado', dataTampado = " + buraco.getDataTampado() + " WHERE latitude = " + buraco.getLatitude() + " AND longitude = " + buraco.getLongitude();
-        String queryAtualizarQtd = "UPDATE buraco SET status = 'Tampado', dataTampado = " + "'" + buraco.getDataTampado() + "'" + " WHERE id = " + buraco.getId();
+        String queryAtualizarQtd = "UPDATE buraco SET status = 'Tampado', dataTampado = " + "'" + buraco.getDataTampado() + "'" + " WHERE id = " + buraco.getIdBuraco();
 
         db.execSQL(queryAtualizarQtd);
         db.close();
@@ -189,8 +188,8 @@ public class BuracoLocalDao extends SQLiteOpenHelper {
             do{
                 Buraco bura = new Buraco();
 
-                bura.setId(cursor.getInt(0));
-                bura.setIdBuraco(cursor.getInt(1));
+//                 bura.setId(cursor.getInt(0));
+                bura.setIdBuraco(cursor.getString(1));
                 bura.setRua(cursor.getString(2));
                 bura.setBairro(cursor.getString(3));
                 bura.setCidade(cursor.getString(4));
@@ -198,7 +197,6 @@ public class BuracoLocalDao extends SQLiteOpenHelper {
                 bura.setData_Registro(cursor.getString(6));
                 bura.setLatitude(cursor.getString(7));
                 bura.setLongitude(cursor.getString(8));
-                bura.setIdentificador(cursor.getString(9));
                 bura.setQtdOcorrencia(cursor.getInt(10));
                 bura.setStatusBuraco(cursor.getString(11));
 
@@ -226,8 +224,8 @@ public class BuracoLocalDao extends SQLiteOpenHelper {
             do{
                 Buraco bura = new Buraco();
 
-                bura.setId(cursor.getInt(0));
-                bura.setIdBuraco(cursor.getInt(1));
+//                bura.setId(cursor.getInt(0));
+                bura.setIdBuraco(cursor.getString(1));
                 bura.setRua(cursor.getString(2));
                 bura.setBairro(cursor.getString(3));
                 bura.setCidade(cursor.getString(4));
@@ -235,7 +233,6 @@ public class BuracoLocalDao extends SQLiteOpenHelper {
                 bura.setData_Registro(cursor.getString(6));
                 bura.setLatitude(cursor.getString(7));
                 bura.setLongitude(cursor.getString(8));
-                bura.setIdentificador(cursor.getString(9));
                 bura.setQtdOcorrencia(cursor.getInt(10));
                 bura.setStatusBuraco(cursor.getString(11));
                 bura.setDataTampado(cursor.getString(12));

@@ -1,23 +1,13 @@
 package com.example.felipe.buracometro_v5.modelo;
 
-/**
- * Created by felipemota on 02/07/17.
- */
 
 public class Usuario {
 
-    String usuario;
-    String id;
+    private String id;
+    private String email;
+    private String nome;
 
     public Usuario() {
-    }
-
-    public String getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(String usuario) {
-        this.usuario = usuario;
     }
 
     public String getId() {
@@ -26,5 +16,21 @@ public class Usuario {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
     }
 }

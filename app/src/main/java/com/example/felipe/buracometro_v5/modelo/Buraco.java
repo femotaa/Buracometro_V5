@@ -7,21 +7,18 @@ import android.os.Parcelable;
 public class Buraco implements Parcelable {
 
 
-    private int    id;
-    private int    idBuraco;
+    private String idBuraco;
     private String rua;
     private String bairro;
     private String cidade;
     private String estado;
-    private String Data_Registro;
+    private String Data_Registro; //Formato Timestamp
     private String latitude;
     private String longitude;
-    private String identificador;
     private int	   qtdOcorrencia;
     private String statusBuraco;
     private String dataTampado;
-    private int    qtdReabertos;
-
+    private String latitudeLongitude;
 
     //----------------------------------------------------------------------------------------
     //                                      CONSTRUTORES
@@ -32,10 +29,9 @@ public class Buraco implements Parcelable {
 
     }
 
-    public Buraco(int id, int idBuraco, String rua, String bairro, String cidade, String estado, String Data_Registro, String latitude, String longitude, String identificador, String statusBuraco, String dataTampado, int qtdReabertos)
+    public Buraco(String idBuraco, String rua, String bairro, String cidade, String estado, String Data_Registro, String latitude, String longitude, String statusBuraco, String dataTampado, String latitudeLongitude)
     {
         super();
-        this.id = id;
         this.idBuraco = idBuraco;
         this.rua = rua;
         this.bairro = bairro;
@@ -44,28 +40,26 @@ public class Buraco implements Parcelable {
         this.Data_Registro = Data_Registro;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.identificador = identificador;
         this.statusBuraco = statusBuraco;
         this.dataTampado = dataTampado;
-        this.qtdReabertos = qtdReabertos;
+        this.latitudeLongitude = latitudeLongitude;
+
     }
 
     //Construtor para tornar o Objeto Parcelable
     //Esta classe esta implementando a interface Parcelable, para transporte de objetos entre activities
     protected Buraco(Parcel in) {
-        id              = in.readInt();
-        idBuraco        = in.readInt();
-        rua             = in.readString();
+        idBuraco        = in.readString();
         bairro          = in.readString();
         cidade          = in.readString();
         estado          = in.readString();
+        rua             = in.readString();
         Data_Registro   = in.readString();
         latitude        = in.readString();
         longitude       = in.readString();
-        identificador   = in.readString();
         statusBuraco    = in.readString();
         dataTampado     = in.readString();
-        qtdReabertos    = in.readInt();
+        latitudeLongitude = in.readString();
 
     }
 
@@ -75,19 +69,11 @@ public class Buraco implements Parcelable {
     //----------------------------------------------------------------------------------------
 
 
-    public int  getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int  getIdBuraco() {
+    public String  getIdBuraco() {
         return idBuraco;
     }
 
-    public void setIdBuraco(int idBuraco) {
+    public void setIdBuraco(String idBuraco) {
         this.idBuraco = idBuraco;
     }
 
@@ -137,6 +123,7 @@ public class Buraco implements Parcelable {
 
     public void setLatitude(String latitude) {
         this.latitude = latitude;
+        latitudeLongitude = latitude + "_" + longitude;
     }
 
     public String getLongitude() {
@@ -145,14 +132,7 @@ public class Buraco implements Parcelable {
 
     public void setLongitude(String longitude) {
         this.longitude = longitude;
-    }
-
-    public String getIdentificador() {
-        return identificador;
-    }
-
-    public void setIdentificador(String identificador) {
-        this.identificador = identificador;
+        latitudeLongitude = latitude + "_" + longitude;
     }
 
     public int getQtdOcorrencia() {
@@ -179,12 +159,12 @@ public class Buraco implements Parcelable {
         this.dataTampado = dataTampado;
     }
 
-    public int getQtdReabertos() {
-        return qtdReabertos;
+    public String getLatitudeLongitude() {
+        return latitudeLongitude;
     }
 
-    public void setQtdReabertos(int qtdReabertos) {
-        this.qtdReabertos = qtdReabertos;
+    public void setLatitudeLongitude(String latitudeLongitude) {
+        this.latitudeLongitude = latitudeLongitude;
     }
 
     @Override
@@ -222,8 +202,7 @@ public class Buraco implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(id);
-        dest.writeInt(idBuraco);
+        dest.writeString(idBuraco);
         dest.writeString(rua);
         dest.writeString(bairro);
         dest.writeString(cidade);
@@ -231,10 +210,9 @@ public class Buraco implements Parcelable {
         dest.writeString(Data_Registro);
         dest.writeString(latitude);
         dest.writeString(longitude);
-        dest.writeString(identificador);
         dest.writeString(statusBuraco);
         dest.writeString(dataTampado);
-        dest.writeInt(qtdReabertos);
+        dest.writeString(latitudeLongitude);
 
     }
 

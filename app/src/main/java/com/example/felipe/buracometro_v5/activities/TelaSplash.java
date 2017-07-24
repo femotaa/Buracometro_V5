@@ -12,10 +12,16 @@ import com.example.felipe.buracometro_v5.R;
 public class TelaSplash extends Activity
 {
 
+    boolean isLogado;
+    SharedPreferences settings;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tela_splash);
+
+        settings = getSharedPreferences("preferencias", 0);
+        isLogado   = settings.getBoolean("isLogado", false);
 
         startHeavyProcessing();
     }
@@ -34,15 +40,29 @@ public class TelaSplash extends Activity
             } catch (InterruptedException e) {
                 Thread.interrupted();
             }
+
+
             return "OK SlashScreen";
+
+
         }
 
         @Override
         protected void onPostExecute(String result) {
-            Intent i = new Intent(TelaSplash.this, TelaPrimeiroAcesso.class);
-            i.putExtra("data", result);
-            startActivity(i);
-            finish();
+
+            if(isLogado){
+
+                Intent mudarDeTela = new Intent(getBaseContext(), MainActivity.class);
+                startActivity(mudarDeTela);
+                finish();
+
+            }else{
+
+                Intent mudarDeTela = new Intent(getBaseContext(), TelaLogin.class);
+                startActivity(mudarDeTela);
+                finish();
+            }
+
         }
 
         @Override

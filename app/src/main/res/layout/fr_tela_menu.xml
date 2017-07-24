@@ -86,7 +86,7 @@
             android:layout_alignBottom="@+id/btnBuracometro"
             android:layout_toRightOf="@+id/btnBuracometro"
             android:layout_toEndOf="@+id/btnBuracometro"
-            android:visibility="visible">
+            android:visibility="invisible">
 
         </Button>
 

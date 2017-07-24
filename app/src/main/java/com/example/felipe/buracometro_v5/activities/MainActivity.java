@@ -1,6 +1,9 @@
 package com.example.felipe.buracometro_v5.activities;
 
-import android.graphics.Color;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
@@ -12,7 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.felipe.buracometro_v5.R;
 import com.example.felipe.buracometro_v5.fragments.TelaConfiguracoes;
@@ -108,6 +111,46 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return true;
         }
 
+        if(id == R.id.action_deslogar){
+
+            AlertDialog alertar;
+            AlertDialog.Builder mensagemInfo = new AlertDialog.Builder(this);
+            mensagemInfo.setTitle("Deseja deslogar do Buracometro?");
+
+            mensagemInfo.setPositiveButton(" Sim ", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+
+
+                    SharedPreferences settings = getBaseContext().getSharedPreferences("preferencias", 0);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putBoolean("isLogado", false);
+                    editor.apply();
+
+                    editor.putString("login", "");
+                    editor.apply();
+
+                    Toast.makeText(getBaseContext(), "Deslogado", Toast.LENGTH_LONG).show();
+
+                    Intent mudarDeTela = new Intent(getBaseContext(), TelaLogin.class);
+                    startActivity(mudarDeTela);
+                    finish();
+
+                }
+            });
+
+            mensagemInfo.setNegativeButton(" Cancelar ", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+
+            alertar = mensagemInfo.create();
+            alertar.show();
+
+
+        }
+
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -123,7 +166,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     {
 
         int id = item.getItemId();
-        FragmentManager fr = getSupportFragmentManager();
 
         if (id == R.id.inicio) {
 

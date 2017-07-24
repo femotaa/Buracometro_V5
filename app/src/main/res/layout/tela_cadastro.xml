@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Digite seu nome:"
+        android:id="@+id/textoNome"
+        android:layout_marginTop="65dp"
+        android:layout_below="@+id/textView4"
+        android:layout_centerHorizontal="true" />
+
+
+    <EditText
+        android:layout_width="320dp"
+        android:layout_height="40dp"
+        android:id="@+id/inputNome"
+        android:background="@drawable/texto_background_neutro"
+        android:layout_below="@+id/textoNome"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:inputType="textEmailAddress|textNoSuggestions"
+        android:textAlignment="center">
+
+    </EditText>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Digite seu email:"
+        android:id="@+id/textoLogin"
+        android:layout_marginTop="15dp"
+        android:layout_below="@+id/inputNome"
+        android:layout_centerHorizontal="true" />
+
+
+    <EditText
+        android:layout_width="320dp"
+        android:layout_height="40dp"
+        android:id="@+id/inputLogin"
+        android:background="@drawable/texto_background_neutro"
+        android:layout_below="@+id/textoLogin"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:inputType="textEmailAddress|textNoSuggestions"
+        android:textAlignment="center">
+
+    </EditText>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Digite uma senha:"
+        android:id="@+id/textoSenha"
+        android:layout_marginTop="20dp"
+        android:layout_below="@+id/inputLogin"
+        android:layout_centerHorizontal="true" />
+
+
+    <EditText
+        android:layout_width="320dp"
+        android:layout_height="40dp"
+        android:id="@+id/inputSenha"
+        android:background="@drawable/texto_background_neutro"
+        android:layout_below="@+id/textoSenha"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:inputType="textPassword"
+        android:textAlignment="center">
+
+    </EditText>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#57a6d7"
+        android:id="@+id/txtMsgInvalida"
+        android:layout_marginTop="30dp"
+        android:layout_centerHorizontal="true"
+        android:textAlignment="center"
+        android:layout_below="@+id/inputSenha"
+        android:visibility="invisible"/>
+
+    <Button
+        android:layout_width="55dip"
+        android:layout_height="55dip"
+        android:id="@+id/btnEntrar"
+        android:background="@drawable/btn_manual_buraco"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:layout_below="@+id/txtMsgInvalida"
+        android:textAlignment="center">
+
+    </Button>
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cadastrar"
+        android:id="@+id/txtEntrar"
+        android:textColor="#f9b122"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/btnEntrar"
+        android:layout_centerHorizontal="true" />
+
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:id="@+id/progressCadastro"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/txtEntrar"
+        android:layout_marginTop="40dp"
+        android:visibility="invisible"/>
+
+
+
+</RelativeLayout>

@@ -31,6 +31,8 @@ import android.widget.ViewFlipper;
 import com.example.felipe.buracometro_v5.R;
 import com.example.felipe.buracometro_v5.dao.BuracoLocalDao;
 import com.example.felipe.buracometro_v5.dao.BuracoWebDao;
+import com.example.felipe.buracometro_v5.dao.DaoFirebase;
+import com.example.felipe.buracometro_v5.listeners.OnGetFirebaseBuracosListener;
 import com.example.felipe.buracometro_v5.listeners.RecyclerViewClickListener;
 import com.example.felipe.buracometro_v5.modelo.Buraco;
 import com.example.felipe.buracometro_v5.util.ListaBuracoRecycleAdapter;
@@ -42,6 +44,7 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DatabaseError;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
 
@@ -720,8 +723,7 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
                                 "\nLatitude: " + buracoDaLista.getLatitude() +
                                 "\nLongitude: " + buracoDaLista.getLongitude() +
                                 "\nStatus: " + buracoDaLista.getStatusBuraco() +
-                                "\nOcorrencias: " + buracoDaLista.getQtdOcorrencia() +
-                                "\nVezes Reaberto: " + buracoDaLista.getQtdReabertos());
+                                "\nOcorrencias: " + buracoDaLista.getQtdOcorrencia());
                 break;
 
             case 4:
@@ -745,7 +747,6 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
                                 "\nLongitude: " + buracoDaLista.getLongitude() +
                                 "\nStatus: " + buracoDaLista.getStatusBuraco() +
                                 "\nOcorrencias: " + buracoDaLista.getQtdOcorrencia() +
-                                "\nVezes Reaberto: " + buracoDaLista.getQtdReabertos() +
                                 "\nData Tampado: " + buracoDaLista.getDataTampado());
                 break;
         }
@@ -991,6 +992,54 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
                         break;
 
                     case 3:
+
+                        new DaoFirebase().listarBuracosCriticos(new OnGetFirebaseBuracosListener() {
+
+                            @Override
+                            public void onStart() {
+                            }
+
+                            @Override
+                            public void onRetornoLista(ArrayList<Buraco> buracos){
+
+                                //Log.e("Buraquim2", "" + buracos.get(0).getIdBuraco());
+                                //Log.e("Buraquim3", "" + buracos.get(1).getIdBuraco());
+
+                                try{
+                                    listaCriticos = buracos;
+                                    adapterListaCriticos();
+
+                                    conexaoOk = true;
+                                    erroCriticos = false;
+                                    inicializadoCriticos = true;
+
+                                }catch (Exception e) {
+                                    erroCriticos = true;
+                                    Log.e("Errouuuuu", "Exception");
+                                    e.printStackTrace();
+                                }
+
+                            }
+
+                            @Override
+                            public void onFailed(DatabaseError databaseError) {
+                                //DO SOME THING WHEN GET DATA FAILED HERE
+                            }
+
+                            @Override
+                            public void onRetornoExiste(Boolean existe){
+                                //DO SOME THING WHEN GET DATA FAILED HERE
+                            }
+
+                            @Override
+                            public void onRetornoBuraco(Buraco buraco) {
+                                //DO SOME THING WHEN GET DATA FAILED HERE
+                            }
+
+                        });
+
+
+                        /* * /
                         try{
                             listaCriticos = daoWeb.buscarMaisCriticos(0);
                             adapterListaCriticos();
@@ -1012,6 +1061,8 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
                             Log.e("Errouuuuu", "Exception");
                             e.printStackTrace();
                         }
+                        /* */
+
                         break;
 
                     case 4:
@@ -1053,6 +1104,52 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
                 switch (qualLista){
 
                     case 3:
+
+                        new DaoFirebase().listarBuracosCriticos(new OnGetFirebaseBuracosListener() {
+
+                            @Override
+                            public void onStart() {
+                            }
+
+                            @Override
+                            public void onRetornoLista(ArrayList<Buraco> buracos){
+
+                                //Log.e("Buraquim2", "" + buracos.get(0).getIdBuraco());
+                                //Log.e("Buraquim3", "" + buracos.get(1).getIdBuraco());
+
+                                try{
+                                    listaCriticos = buracos;
+
+                                    conexaoOk = true;
+                                    erroCriticos = false;
+                                    inicializadoCriticos = true;
+
+                                }catch (Exception e) {
+                                    erroCriticos = true;
+                                    Log.e("Errouuuuu", "Exception");
+                                    e.printStackTrace();
+                                }
+
+                            }
+
+                            @Override
+                            public void onFailed(DatabaseError databaseError) {
+                                //DO SOME THING WHEN GET DATA FAILED HERE
+                            }
+
+                            @Override
+                            public void onRetornoExiste(Boolean existe){
+                                //DO SOME THING WHEN GET DATA FAILED HERE
+                            }
+
+                            @Override
+                            public void onRetornoBuraco(Buraco buraco) {
+                                //DO SOME THING WHEN GET DATA FAILED HERE
+                            }
+
+                        });
+
+                        /* * /
                         try {
                             listaLoad = daoWeb.buscarMaisCriticos(paginaCriticos);
                         } catch (Exception e) {
@@ -1063,6 +1160,8 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
                         for (int i = 0; i < listaLoad.size(); i++) {
                             listaCriticos.add(listaLoad.get(i));
                         }
+                        /* */
+
                         break;
 
                     case 4:
