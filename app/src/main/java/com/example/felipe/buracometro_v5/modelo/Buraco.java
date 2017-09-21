@@ -167,6 +167,7 @@ public class Buraco implements Parcelable {
         this.latitudeLongitude = latitudeLongitude;
     }
 
+
     @Override
     public String toString()
     {

@@ -12,4 +12,11 @@
         android:title="@string/action_deslogar"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/action_mapear"
+        android:orderInCategory="100"
+        android:title="@string/action_mapear"
+        android:visible="false"
+        app:showAsAction="never" />
+
 </menu>

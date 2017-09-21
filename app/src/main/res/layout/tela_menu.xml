@@ -29,8 +29,8 @@
             android:layout_marginRight="18dip"
             android:layout_marginTop="10dip"
             android:layout_alignParentRight="true"
-            android:background="@drawable/btn_recentes_xml"
-            android:onClick="mudarTelaRecentes"
+            android:background="@drawable/btn_adicionar_xml"
+            android:onClick="mudarTelaNotificaBuraco"
             android:contentDescription="@string/app_name">
 
         </ImageButton>
@@ -42,8 +42,8 @@
             android:layout_marginLeft="18dip"
             android:id="@+id/btnAreasCriticas"
             android:layout_below="@+id/btnRegistrados"
-            android:background="@drawable/btn_criticos_xml"
-            android:onClick="mudarTelaCriticos"
+            android:background="@drawable/btn_mapa_xml"
+            android:onClick="mudarTelaMapas"
             android:contentDescription="@string/app_name">
 
         </ImageButton>

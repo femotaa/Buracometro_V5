@@ -6,19 +6,28 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.view.View;
 
+import com.example.felipe.buracometro_v5.listeners.OnGetFirebaseBuracosListener;
 import com.example.felipe.buracometro_v5.modelo.Buraco;
+import com.example.felipe.buracometro_v5.modelo.Usuario;
 
 import java.util.ArrayList;
 
 
 public class BuracoLocalDao extends SQLiteOpenHelper {
 
-    public static final String NOME_BANCO = "buracomentroSQLite";
-    public static final int VERSAO = 1;
+    private static final String NOME_BANCO = "buracomentroSQLite";
+    private static final int VERSAO = 1;
 
-    public BuracoLocalDao(Context context){
+    private String usuario;
+
+    public BuracoLocalDao(Context context, String usuario){
         super(context, NOME_BANCO,null,VERSAO);
+        this.usuario = usuario;
     }
 
 
@@ -27,23 +36,22 @@ public class BuracoLocalDao extends SQLiteOpenHelper {
 
         String sql = "CREATE TABLE buraco (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "idBuraco INTEGER,"       +
-                "rua text,"               +
-                "bairro text,"            +
-                "cidade text,"            +
-                "estado text,"            +
-                "data_registro datetime," +
-                "latitude text,"          +
-                "longitude text,"         +
-                "identificador text,"     +
-                "qtdocorrencia INTEGER,"  +
-                "status text,"            +
-                "dataTampado datetime)";
+                "idBuraco text,"           +
+                "rua text,"                +
+                "bairro text,"             +
+                "cidade text,"             +
+                "estado text,"             +
+                "data_registro text,"      +
+                "latitude text,"           +
+                "longitude text,"          +
+                "qtdocorrencia INTEGER,"   +
+                "status text,"             +
+                "dataTampado text,"        +
+                "usuario text)";
 
         db.execSQL(sql);
 
     }
-
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -52,32 +60,32 @@ public class BuracoLocalDao extends SQLiteOpenHelper {
 
 
     //---------------------------------------------------------------------
-    //            METODOS DE MANIPULAÇÃO DO BANCO DE DADOS
+    //                      METODOS DE PARA INSERIR
     //---------------------------------------------------------------------
 
     public void inserirBuraco (Buraco buraco) throws Exception
     {
-        SQLiteDatabase db = getWritableDatabase();
-        ContentValues valores = new ContentValues();
+            SQLiteDatabase db = getWritableDatabase();
+            ContentValues valores = new ContentValues();
 
-        valores.put("idBuraco", buraco.getIdBuraco());
-        valores.put("rua", buraco.getRua());
-        valores.put("bairro", buraco.getBairro());
-        valores.put("cidade", buraco.getCidade());
-        valores.put("estado", buraco.getEstado());
-        valores.put("data_registro", buraco.getData_Registro());
-        valores.put("latitude", buraco.getLatitude());
-        valores.put("longitude", buraco.getLongitude());
-        valores.put("qtdocorrencia", 1);
-        valores.put("status", buraco.getStatusBuraco());
-        valores.put("dataTampado", buraco.getDataTampado());
+            valores.put("idBuraco", buraco.getIdBuraco());
+            valores.put("rua", buraco.getRua());
+            valores.put("bairro", buraco.getBairro());
+            valores.put("cidade", buraco.getCidade());
+            valores.put("estado", buraco.getEstado());
+            valores.put("data_registro", buraco.getData_Registro());
+            valores.put("latitude", buraco.getLatitude());
+            valores.put("longitude", buraco.getLongitude());
+            valores.put("qtdocorrencia", 1);
+            valores.put("status", buraco.getStatusBuraco());
+            valores.put("dataTampado", buraco.getDataTampado());
+            valores.put("usuario", usuario);
 
-        db.insert("buraco", null, valores);
-        db.close();
-
+            db.insert("buraco", null, valores);
+            db.close();
     }
 
-    public int validaSeBuracoExiste(Buraco bura) throws Exception
+    public boolean validaSeBuracoExiste(Buraco bura) throws Exception
     {
         /*
             Retornos dessa função
@@ -89,39 +97,125 @@ public class BuracoLocalDao extends SQLiteOpenHelper {
 
         SQLiteDatabase db = getReadableDatabase();
 
-        String query = "SELECT id, status FROM buraco WHERE latitude = " + bura.getLatitude() +
-                " and longitude = " + bura.getLongitude() + " LIMIT 1";
+        String query = "SELECT id FROM buraco WHERE latitude = '" + bura.getLatitude() +
+                "' and longitude = '" + bura.getLongitude() + "' AND status = 'Aberto' LIMIT 1";
 
         Cursor cursor = db.rawQuery(query, null);
 
         int qtdRetornados = cursor.getCount();
 
-        Buraco buraco = new Buraco();
-        String status = "";
-        if(cursor.moveToFirst()) {
-            do{
-
-//                buraco.setId(cursor.getInt(0));
-                bura.setStatusBuraco(cursor.getString(1));
-                status = cursor.getString(1);
-
-            }while(cursor.moveToNext());
-        }
-
         db.close();
         cursor.close();
 
-        if (qtdRetornados != 0){
-            //Valida se foi um buraco que já estava tampado
-            if(status.equals("Tampado")){
-                return 2;
-            }else{
-                return 1;
-            }
+        if (qtdRetornados > 0){
+            return false;
+        }else{
+            return true;
         }
 
-        return 0;
+    }
 
+
+    //---------------------------------------------------------------------
+    //                        METODOS DE BUSCA
+    //---------------------------------------------------------------------
+
+    private ArrayList<Buraco> listaBuraco = new ArrayList<Buraco>();
+    private ArrayList<Buraco> listaBuracoTampados = new ArrayList<Buraco>();
+    Handler handler = new Handler();
+
+    public void buscarBuracos (final OnGetFirebaseBuracosListener listener) throws Exception{
+
+        listener.onStart();
+
+        new Thread(new Runnable() {
+            public void run() {
+
+                listaBuraco = new ArrayList<Buraco>();
+                listaBuracoTampados = new ArrayList<Buraco>();
+
+                SQLiteDatabase db = getReadableDatabase();
+
+                String queryBuscarTodos = "SELECT id, rua, bairro, cidade, estado, data_registro, latitude, longitude, qtdocorrencia, status FROM buraco WHERE status = 'Aberto' AND usuario = '" + usuario + "' ORDER BY data_registro DESC";
+
+                Cursor cursor = db.rawQuery(queryBuscarTodos, null);
+
+                if(cursor.moveToFirst()){
+                    do{
+                        Buraco bura = new Buraco();
+
+                        bura.setIdBuraco(cursor.getString(0));
+                        bura.setRua(cursor.getString(1));
+                        bura.setBairro(cursor.getString(2));
+                        bura.setCidade(cursor.getString(3));
+                        bura.setEstado(cursor.getString(4));
+                        bura.setData_Registro(cursor.getString(5));
+                        bura.setLatitude(cursor.getString(6));
+                        bura.setLongitude(cursor.getString(7));
+                        bura.setQtdOcorrencia(cursor.getInt(8));
+                        bura.setStatusBuraco(cursor.getString(9));
+
+                        listaBuraco.add(bura);
+
+                    }while(cursor.moveToNext());
+
+                }
+                cursor.close();
+                db.close();
+
+
+                SQLiteDatabase db2 = getReadableDatabase();
+
+                String queryBuscarTodosTampados = "SELECT id, rua, bairro, cidade, estado, data_registro, latitude, longitude, qtdocorrencia, status, dataTampado FROM buraco WHERE status = 'Tampado' AND usuario = '" + usuario + "' ORDER BY dataTampado DESC";
+                Cursor cursor2 = db2.rawQuery(queryBuscarTodosTampados, null);
+
+                if(cursor2.moveToFirst()){
+                    do{
+                        Buraco bura = new Buraco();
+
+                        bura.setIdBuraco(cursor2.getString(0));
+                        bura.setRua(cursor2.getString(1));
+                        bura.setBairro(cursor2.getString(2));
+                        bura.setCidade(cursor2.getString(3));
+                        bura.setEstado(cursor2.getString(4));
+                        bura.setData_Registro(cursor2.getString(5));
+                        bura.setLatitude(cursor2.getString(6));
+                        bura.setLongitude(cursor2.getString(7));
+                        bura.setQtdOcorrencia(cursor2.getInt(8));
+                        bura.setStatusBuraco(cursor2.getString(9));
+                        bura.setDataTampado(cursor2.getString(10));
+
+                        listaBuracoTampados.add(bura);
+
+                    }while(cursor2.moveToNext());
+
+                }
+
+                cursor2.close();
+                db2.close();
+
+                handler.post(new Runnable() {
+                    public void run() {
+                        listener.onRetornoDuasLista(listaBuraco,listaBuracoTampados);
+                    }
+                });
+
+            }
+        }).start();
+
+    }
+
+
+
+    //---------------------------------------------------------------------
+
+    public void reabrirBuraco(Buraco buraco)throws Exception{
+
+        SQLiteDatabase db = getWritableDatabase();
+        String queryAtualizarQtd = "UPDATE buraco SET status = 'Aberto' WHERE latitude = " + buraco.getLatitude() + " AND longitude = " + buraco.getLongitude();
+
+        db.execSQL(queryAtualizarQtd);
+        db.close();
     }
 
     public void atualizarQuantidade(Buraco buraco)throws Exception{
@@ -133,11 +227,42 @@ public class BuracoLocalDao extends SQLiteOpenHelper {
         db.close();
     }
 
+    //---------------------------------------------------------------------
+
+
+
+    //---------------------------------------------------------------------
+    //                        METODOS DE EXCLUSÃO
+    //---------------------------------------------------------------------
+    //                      METODOS DE ATUALIZAÇÃO
+    public void tamparBuracoLocal(Buraco buraco)throws Exception{
+
+        Long tsLong = System.currentTimeMillis()/1000;
+        String timestamp = tsLong.toString();
+
+        SQLiteDatabase db = getWritableDatabase();
+        String queryTampar = "UPDATE buraco SET status = 'Tampado', dataTampado = " + "'" + timestamp + "'" + " WHERE id = '" + buraco.getIdBuraco() + "'";
+
+        db.execSQL(queryTampar);
+        db.close();
+    }
+
+    public void deletarTodosDoUsuario ()throws Exception{
+
+        SQLiteDatabase db = getWritableDatabase();
+
+        String where = "usuario = '" + usuario + "'";
+
+        db.delete("buraco", where, null);
+
+        db.close();
+    }
+
     public void deletarBuraco (Buraco bura)throws Exception{
 
         SQLiteDatabase db = getWritableDatabase();
 
-        String where = "idBuraco = " + bura.getIdBuraco();
+        String where = "id = '" + bura.getIdBuraco() + "' AND usuario = '" + usuario + "'";
 
         db.delete("buraco", where, null);
 
@@ -154,100 +279,6 @@ public class BuracoLocalDao extends SQLiteOpenHelper {
 
     }
 
-    public void reabrirBuraco(Buraco buraco)throws Exception{
-
-        SQLiteDatabase db = getWritableDatabase();
-        String queryAtualizarQtd = "UPDATE buraco SET status = 'Aberto' WHERE latitude = " + buraco.getLatitude() + " AND longitude = " + buraco.getLongitude();
-
-        db.execSQL(queryAtualizarQtd);
-        db.close();
-    }
-
-    public void tamparBuracoLocal(Buraco buraco)throws Exception{
-
-        SQLiteDatabase db = getWritableDatabase();
-//            String queryAtualizarQtd = "UPDATE buraco SET status = 'Tampado', dataTampado = " + buraco.getDataTampado() + " WHERE latitude = " + buraco.getLatitude() + " AND longitude = " + buraco.getLongitude();
-        String queryAtualizarQtd = "UPDATE buraco SET status = 'Tampado', dataTampado = " + "'" + buraco.getDataTampado() + "'" + " WHERE id = " + buraco.getIdBuraco();
-
-        db.execSQL(queryAtualizarQtd);
-        db.close();
-    }
-
-    public ArrayList<Buraco> buscaBuracos() throws Exception{
-
-        ArrayList<Buraco> listaBuraco = new ArrayList<Buraco>();
-
-        SQLiteDatabase db = getReadableDatabase();
-
-//        String queryBuscarTodos = "SELECT * FROM buraco WHERE status = 'Aberto' ORDER BY data_sistema DESC";
-        String queryBuscarTodos = "SELECT id, idBuraco, rua, bairro, cidade, estado, strftime('%d/%m/%Y', data_registro), latitude, longitude, identificador, qtdocorrencia, status FROM buraco WHERE status = 'Aberto' ORDER BY data_registro DESC";
-
-        Cursor cursor = db.rawQuery(queryBuscarTodos, null);
-
-        if(cursor.moveToFirst()){
-            do{
-                Buraco bura = new Buraco();
-
-//                 bura.setId(cursor.getInt(0));
-                bura.setIdBuraco(cursor.getString(1));
-                bura.setRua(cursor.getString(2));
-                bura.setBairro(cursor.getString(3));
-                bura.setCidade(cursor.getString(4));
-                bura.setEstado(cursor.getString(5));
-                bura.setData_Registro(cursor.getString(6));
-                bura.setLatitude(cursor.getString(7));
-                bura.setLongitude(cursor.getString(8));
-                bura.setQtdOcorrencia(cursor.getInt(10));
-                bura.setStatusBuraco(cursor.getString(11));
-
-                listaBuraco.add(bura);
-
-            }while(cursor.moveToNext());
-
-        }
-        cursor.close();
-        db.close();
-        return listaBuraco;
-    }
-
-    public ArrayList<Buraco> buscaBuracosTampados() throws Exception{
-
-        ArrayList<Buraco> listaBuraco = new ArrayList<Buraco>();
-
-        SQLiteDatabase db = getReadableDatabase();
-
-//        String queryBuscarTodos = "SELECT * FROM buraco WHERE status = 'Tampado' ORDER BY data_sistema DESC";
-        String queryBuscarTodos = "SELECT id, idBuraco, rua, bairro, cidade, estado, strftime('%d/%m/%Y', data_registro), latitude, longitude, identificador, qtdocorrencia, status, strftime('%d/%m/%Y', dataTampado) FROM buraco WHERE status = 'Tampado' ORDER BY dataTampado DESC";
-        Cursor cursor = db.rawQuery(queryBuscarTodos, null);
-
-        if(cursor.moveToFirst()){
-            do{
-                Buraco bura = new Buraco();
-
-//                bura.setId(cursor.getInt(0));
-                bura.setIdBuraco(cursor.getString(1));
-                bura.setRua(cursor.getString(2));
-                bura.setBairro(cursor.getString(3));
-                bura.setCidade(cursor.getString(4));
-                bura.setEstado(cursor.getString(5));
-                bura.setData_Registro(cursor.getString(6));
-                bura.setLatitude(cursor.getString(7));
-                bura.setLongitude(cursor.getString(8));
-                bura.setQtdOcorrencia(cursor.getInt(10));
-                bura.setStatusBuraco(cursor.getString(11));
-                bura.setDataTampado(cursor.getString(12));
-
-                listaBuraco.add(bura);
-
-            }while(cursor.moveToNext());
-
-        }
-
-        cursor.close();
-        db.close();
-        return listaBuraco;
-
-    }
 
     public void ajustarBanco(){
         SQLiteDatabase db = getWritableDatabase();

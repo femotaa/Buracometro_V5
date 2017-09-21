@@ -15,6 +15,9 @@ import com.example.felipe.buracometro_v5.listeners.OnLoadMoreListener;
 import com.example.felipe.buracometro_v5.listeners.RecyclerViewClickListener;
 import com.example.felipe.buracometro_v5.modelo.Buraco;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class ListaBuracoRecycleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -168,17 +171,29 @@ public class ListaBuracoRecycleAdapter extends RecyclerView.Adapter<RecyclerView
 
             if(tampados){
                 customViewHolder.textoDaData.setText("Data Tampado: ");
-                customViewHolder.textoDataCriticos.setText(buracosItems.get(i).getDataTampado());
+
+                long timestamp = Long.parseLong(buracosItems.get(i).getDataTampado()) * 1000L;
+                String data;
+                DateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+                Date netDate = (new Date(timestamp));
+                data =  sdf.format(netDate);
+
+                customViewHolder.textoDataCriticos.setText(data);
 
             }else{
-                customViewHolder.textoDataCriticos.setText(buracosItems.get(i).getData_Registro());
+
+                long timestamp = Long.parseLong(buracosItems.get(i).getData_Registro()) * 1000L;
+                String data;
+                DateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+                Date netDate = (new Date(timestamp));
+                data =  sdf.format(netDate);
+                customViewHolder.textoDataCriticos.setText(data);
             }
 
             if(comOcorrencias){
                 customViewHolder.textoOcorrencias.setVisibility(View.VISIBLE);
                 customViewHolder.textoDoRegistros.setVisibility(View.VISIBLE);
             }
-
 
         } else if (holder instanceof LoadingViewHolder) {
             LoadingViewHolder loadingViewHolder = (LoadingViewHolder) holder;

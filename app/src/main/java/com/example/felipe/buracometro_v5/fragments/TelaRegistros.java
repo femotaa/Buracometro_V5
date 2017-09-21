@@ -3,18 +3,23 @@ package com.example.felipe.buracometro_v5.fragments;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.os.AsyncTask;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.app.Fragment;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -29,12 +34,13 @@ import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.example.felipe.buracometro_v5.R;
+import com.example.felipe.buracometro_v5.activities.TelaLogin;
 import com.example.felipe.buracometro_v5.dao.BuracoLocalDao;
-import com.example.felipe.buracometro_v5.dao.BuracoWebDao;
 import com.example.felipe.buracometro_v5.dao.DaoFirebase;
 import com.example.felipe.buracometro_v5.listeners.OnGetFirebaseBuracosListener;
 import com.example.felipe.buracometro_v5.listeners.RecyclerViewClickListener;
 import com.example.felipe.buracometro_v5.modelo.Buraco;
+import com.example.felipe.buracometro_v5.modelo.Usuario;
 import com.example.felipe.buracometro_v5.util.ListaBuracoRecycleAdapter;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -48,9 +54,10 @@ import com.google.firebase.database.DatabaseError;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
 
-import java.net.ConnectException;
-import java.net.SocketTimeoutException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 
 public class TelaRegistros extends Fragment implements RecyclerViewClickListener, OnMapReadyCallback {
@@ -63,11 +70,10 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
     ArrayList<Buraco> listaRecentesAberto = new ArrayList<Buraco>();
     ArrayList<Buraco> listaRecentesTampados = new ArrayList<Buraco>();
 
-    boolean inicializadoRegistroAberto = false;
-    boolean inicializadoRegistroTampados = false;
+
     boolean inicializadoCriticos = false;
-    boolean inicializadoRecentesAberto = false;
-    boolean inicializadoRecentesTampados = false;
+    boolean inicializadoRecentes = false;
+    boolean inicializadoRegistros = false;
 
     RecyclerView listaRecycleRegistros;
     ListaBuracoRecycleAdapter adapter;
@@ -95,21 +101,22 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
     ImageView imgViewFlip;
     String textos[] = {"Carregando...", "Aguarde um momento", "Buracometro"};
 
-    BuracoLocalDao daoLocal;
-    BuracoWebDao daoWeb = new BuracoWebDao();
+    Usuario usuarioAtual = new Usuario();
 
-    int qualLista = 0;
+    int qualLista = 1;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        view = inflater.inflate(R.layout.fr_tela_registros, container, false);
+        view = inflater.inflate(R.layout.tela_registros, container, false);
 
         ImageView imgToolbar = (ImageView) getActivity().findViewById(R.id.img_icone);
         imgToolbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.icone_registros));
         TextView textoToolbar = (TextView) getActivity().findViewById(R.id.texto_toolbar);
         textoToolbar.setText(TEXTO_TOOLBAR);
+
+        setHasOptionsMenu(true);
 
         tabhost = (TabHost) view.findViewById(R.id.tabhost);
         tabhost.setup();
@@ -152,11 +159,16 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
         btnOpcTampados = (Button) conteudoTela.findViewById(R.id.btnTampados);
         progressBar = (ProgressBar) conteudoTela.findViewById(R.id.progressBar);
 
-        daoLocal = new BuracoLocalDao(view.getContext());
+        SharedPreferences settings = getActivity().getSharedPreferences("preferencias", 0);
+        String emailAtual = settings.getString("login","");
+        String idUsuarioAtual = settings.getString("IdLogin","");
+        String nomeAtual = settings.getString("nome","");
+
+        usuarioAtual.setEmail(emailAtual);
+        usuarioAtual.setId(idUsuarioAtual);
+        usuarioAtual.setNome(nomeAtual);
 
         listarRegistros();
-
-
 
         return view;
     }
@@ -242,14 +254,22 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
                     String irPara = tabhost.getCurrentTabTag();
                     switch (irPara){
+
                         case "tag1":
+                            qualLista = 1;
                             listarRegistros();
                             break;
+
                         case "tag2":
+                            qualLista = 3;
                             listarCriticos();
                             break;
+
                         case "tag3":
+                            qualLista = 4;
                             listarRecentes();
+                            //adapter = new ListaBuracoRecycleAdapter(getContext(), listaRecentesAberto, listaRecycleRegistros, TelaRegistros.this);
+                            //listaRecycleRegistros.setAdapter(adapter);
                             break;
                     }
                 }
@@ -278,11 +298,17 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
                         switch (irPara){
                             case "tag1":
-                                listarRegistros();
+                                qualLista = 2;
+                                adapter = new ListaBuracoRecycleAdapter(getContext(), listaRegistrosTampados, true, listaRecycleRegistros, TelaRegistros.this);
+                                listaRecycleRegistros.setAdapter(adapter);
                                 break;
+
                             case "tag3":
-                                listarRecentes();
+                                qualLista = 5;
+                                adapter = new ListaBuracoRecycleAdapter(getContext(), listaRecentesTampados, true, listaRecycleRegistros, TelaRegistros.this);
+                                listaRecycleRegistros.setAdapter(adapter);
                                 break;
+
                         }
                     }
 
@@ -294,8 +320,10 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
         tabhost.setOnTabChangedListener(new TabHost.OnTabChangeListener(){
             @Override
             public void onTabChanged(String tabId) {
+
                 if(tabhost.getCurrentTabTag().equals("tag1")) {
-                    Log.e("apertado", "apertado 1");
+
+                    qualLista = 1;
                     b = true;
                     btnOpcTampados.setVisibility(View.VISIBLE);
 
@@ -308,7 +336,10 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
                     listarRegistros();
                 }
+
                 if(tabhost.getCurrentTabTag().equals("tag2")) {
+
+                    qualLista = 3;
                     b = true;
                     btnOpcTampados.setVisibility(View.INVISIBLE);
 
@@ -319,9 +350,10 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
                     listarCriticos();
                 }
+
                 if(tabhost.getCurrentTabTag().equals("tag3")) {
 
-                    Log.e("apertado2", "apertado 2");
+                    qualLista = 4;
                     b = true;
                     btnOpcTampados.setVisibility(View.VISIBLE);
                     btnOpcAbertos.setBackgroundDrawable(getResources().getDrawable(R.drawable.opn_lista_background));
@@ -333,6 +365,7 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
                     listarRecentes();
                 }
+
             }});
 
         swipyRefreshLayout.setOnRefreshListener(new SwipyRefreshLayout.OnRefreshListener() {
@@ -375,104 +408,286 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
     public void listarRegistros (){
 
-        if(qualLista != 1){
+        if(!inicializadoRegistros){
 
-            qualLista = 1;
-            if(inicializadoRegistroAberto == false && listaRegistrosAberto.isEmpty()){
-                new AsyncCaller().execute();
+            BuracoLocalDao dao = new BuracoLocalDao(getContext(), usuarioAtual.getEmail());
+
+            try {
+
+                dao.buscarBuracos(new OnGetFirebaseBuracosListener() {
+
+                    @Override
+                    public void onStart() {
+
+                        ArrayList<Buraco> listaBojo = new ArrayList<Buraco>();
+                        adapter = new ListaBuracoRecycleAdapter(getContext(), listaBojo, listaRecycleRegistros, TelaRegistros.this);
+                        listaRecycleRegistros.setAdapter(adapter);
+
+                        progressBar.setVisibility(View.VISIBLE);
+
+                        textos[0] = "Carregando...";
+                        textos[1] = "...";
+                        textos[2] = "Aguarde um momento...";
+                        textoViewFlip.setText(textos[posFlipper]);
+
+                        btnOpcTampados.setClickable(false);
+                    }
+
+                    @Override
+                    public void onRetornoLista(ArrayList<Buraco> listaRetornada){}
+
+                    @Override
+                    public void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados){
+
+                        inicializadoRegistros = true;
+                        listaRegistrosAberto = buracosAbertos;
+                        listaRegistrosTampados = buracosTampados;
+                        progressBar.setVisibility(View.INVISIBLE);
+                        atualizarTextos();
+                        btnOpcTampados.setClickable(true);
+                        adapter = new ListaBuracoRecycleAdapter(getContext(), listaRegistrosAberto, listaRecycleRegistros, TelaRegistros.this);
+                        listaRecycleRegistros.setAdapter(adapter);
+
+                    }
+
+                    @Override
+                    public void onFailed(DatabaseError databaseError) {
+                    }
+
+                    @Override
+                    public void onRetornoExiste(Boolean existe){
+                    }
+
+                    @Override
+                    public void onRetornoBuraco(Buraco buraco) {
+                    }
+
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            else{
-                if(inicializadoRegistroAberto == true && listaRegistrosAberto.isEmpty()){
-                    adapterListaRegistroAbertos();
-                    listaRecycleRegistros.setAdapter(adapter);
-                    msgListaVazia("Registro Abertos neste dispositivo");
 
-                }else{
-                    adapterListaRegistroAbertos();
-                    listaRecycleRegistros.setAdapter(adapter);
-                }
-            }
-
-        }else{
-
-            qualLista = 2;
-            if(inicializadoRegistroTampados == false && listaRegistrosTampados.isEmpty()){
-                new AsyncCaller().execute();
-            }
-            else{
-                if(inicializadoRegistroTampados == true && listaRegistrosTampados.isEmpty()){
-                    adapterListaRegistroTampados();
-                    listaRecycleRegistros.setAdapter(adapter);
-                    msgListaVazia("Registros Tampados");
-
-                }else{
-                    adapterListaRegistroTampados();
-                    listaRecycleRegistros.setAdapter(adapter);
-                    atualizarTextos();
-                }
-            }
         }
+        else{
+
+            atualizarTextos();
+            adapter = new ListaBuracoRecycleAdapter(getContext(), listaRegistrosAberto, listaRecycleRegistros, TelaRegistros.this);
+            listaRecycleRegistros.setAdapter(adapter);
+        }
+
+
     }
 
     public void listarCriticos (){
 
-        if(qualLista != 3){
+        if(!inicializadoCriticos){
 
-            qualLista = 3;
-            if(inicializadoCriticos == false && listaCriticos.isEmpty()){
-                new AsyncCaller().execute();
-            }
-            else{
-                if(inicializadoCriticos == true && listaCriticos.isEmpty()){
+            DaoFirebase dao = new DaoFirebase();
 
-                    adapterListaCriticos();
+            dao.listarBuracosCriticos(new OnGetFirebaseBuracosListener() {
+                @Override
+
+                public void onStart() {
+
+                    ArrayList<Buraco> listaBojo = new ArrayList<Buraco>();
+                    adapter = new ListaBuracoRecycleAdapter(getContext(), listaBojo, listaRecycleRegistros, TelaRegistros.this);
                     listaRecycleRegistros.setAdapter(adapter);
-                    msgListaVazia("Registro Criticos");
-                }else{
 
-                    adapterListaCriticos();
-                    listaRecycleRegistros.setAdapter(adapter);
-                    atualizarTextos();
+                    progressBar.setVisibility(View.VISIBLE);
+
+                    textos[0] = "Carregando...";
+                    textos[1] = "...";
+                    textos[2] = "Aguarde um momento...";
+                    textoViewFlip.setText(textos[posFlipper]);
+
+                    btnOpcTampados.setClickable(false);
+
                 }
-            }
+
+                @Override
+                public void onRetornoLista(ArrayList<Buraco> listaRetornada){
+
+                    inicializadoCriticos = true;
+                    listaCriticos = listaRetornada;
+                    progressBar.setVisibility(View.INVISIBLE);
+                    atualizarTextos();
+                    btnOpcTampados.setClickable(true);
+                    adapter = new ListaBuracoRecycleAdapter(getContext(), listaCriticos, listaRecycleRegistros, TelaRegistros.this, true);
+                    listaRecycleRegistros.setAdapter(adapter);
+
+                }
+
+                @Override
+                public void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados){}
+
+                @Override
+                public void onFailed(DatabaseError databaseError) {
+                }
+
+                @Override
+                public void onRetornoExiste(Boolean existe){
+                }
+
+                @Override
+                public void onRetornoBuraco(Buraco buraco) {
+                }
+
+            });
+
+
         }
+        else{
+
+            atualizarTextos();
+            adapter = new ListaBuracoRecycleAdapter(getContext(), listaCriticos, listaRecycleRegistros, TelaRegistros.this, true);
+            listaRecycleRegistros.setAdapter(adapter);
+        }
+
     }
 
     public void listarRecentes (){
 
-        if(qualLista != 4){
+        if(!inicializadoRecentes){
 
-            qualLista = 4;
-            if(inicializadoRecentesAberto == false && listaRecentesAberto.isEmpty()){
-                new AsyncCaller().execute();
-            }
-            else{
-                if(inicializadoRecentesAberto == true && listaRecentesAberto.isEmpty()){
-                    adapterListaRecentesAbertos();
+            DaoFirebase dao = new DaoFirebase();
+
+            dao.listarBuracosRecentes(0,new OnGetFirebaseBuracosListener() {
+
+                @Override
+                public void onStart() {
+
+                    ArrayList<Buraco> listaBojo = new ArrayList<Buraco>();
+                    adapter = new ListaBuracoRecycleAdapter(getContext(), listaBojo, listaRecycleRegistros, TelaRegistros.this);
                     listaRecycleRegistros.setAdapter(adapter);
-                    msgListaVazia("Registro Abertos");
+
+                    progressBar.setVisibility(View.VISIBLE);
+
+                    textos[0] = "Carregando...";
+                    textos[1] = "...";
+                    textos[2] = "Aguarde um momento...";
+                    textoViewFlip.setText(textos[posFlipper]);
+
+                    btnOpcTampados.setClickable(false);
+                }
+
+                @Override
+                public void onRetornoLista(ArrayList<Buraco> listaRetornada){}
+
+                @Override
+                public void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados){
+
+                    inicializadoRecentes = true;
+                    listaRecentesAberto = buracosAbertos;
+                    listaRecentesTampados = buracosTampados;
+                    progressBar.setVisibility(View.INVISIBLE);
+                    atualizarTextos();
+                    btnOpcTampados.setClickable(true);
+                    adapter = new ListaBuracoRecycleAdapter(getContext(), listaRecentesAberto, listaRecycleRegistros, TelaRegistros.this);
+                    listaRecycleRegistros.setAdapter(adapter);
+
+                }
+
+                @Override
+                public void onFailed(DatabaseError databaseError) {
+                }
+
+                @Override
+                public void onRetornoExiste(Boolean existe){
+                }
+
+                @Override
+                public void onRetornoBuraco(Buraco buraco) {
+                }
+
+            });
+
+        }
+        else{
+
+            atualizarTextos();
+            adapter = new ListaBuracoRecycleAdapter(getContext(), listaRecentesAberto, listaRecycleRegistros, TelaRegistros.this);
+            listaRecycleRegistros.setAdapter(adapter);
+        }
+
+    }
+
+
+    public void atualizarTextos(){
+
+        switch (qualLista){
+            case 1:
+            case 2:
+
+                if(!listaRegistrosAberto.isEmpty()){
+
+                    textos[0] = "Registros: " + listaRegistrosAberto.size();
 
                 }else{
-                    adapterListaRecentesAbertos();
-                    listaRecycleRegistros.setAdapter(adapter);
-                    atualizarTextos();
+
+                    textos[0] = "Você não possui registros de buracos abertos";
+                    textos[1] = "Se souber de algum buraco, pode nos avisar :)" + 0;
+                    textos[2] = ":)";
                 }
-            }
 
-        }else{
 
-            qualLista = 5;
-            if(inicializadoRecentesTampados == true && listaRecentesTampados.isEmpty()){
-                adapterListaRecentesTampados();
-                listaRecycleRegistros.setAdapter(adapter);
-                msgListaVazia("Registros Tampados");
+                if(!listaRegistrosTampados.isEmpty()){
 
-            }else{
-                adapterListaRecentesTampados();
-                listaRecycleRegistros.setAdapter(adapter);
-                atualizarTextos();
-            }
+                    textos[1] = "Tampados: " + listaRegistrosTampados.size();
+                    textos[2] = ":)";
+
+                }else{
+
+                    textos[1] = "Você não possui registro de buracos tampados";
+                    textos[2] = "Se souber de algum buraco, pode nos avisar :)";
+                }
+                break;
+
+            case 3:
+                if(!listaCriticos.isEmpty()){
+
+                    textos[0] = "Críticos: " + listaCriticos.size();
+                    textos[1] = "Total de ocorrencias: " + 999;
+                    textos[2] = "Colocar algo aqui";
+
+                }else{
+
+                    textos[0] = "Não há registros";
+                    textos[1] = "Total de ocorrencias " + 0;
+                    textos[2] = ":)";
+                }
+                break;
+
+            case 4:
+            case 5:
+
+                if(!listaRecentesAberto.isEmpty()){
+
+                    textos[0] = "Recentes: " + listaRecentesAberto.size();
+
+                }else{
+
+                    textos[0] = "Não há buracos Abertos";
+                    textos[1] = "Total de ocorrencias " + 0;
+                    textos[2] = ":)";
+                }
+
+
+                if(!listaRecentesTampados.isEmpty()){
+
+                    textos[1] = "Tampados: " + listaRecentesTampados.size();
+                    textos[2] = ":)";
+
+                }else{
+
+                    textos[1] = "Não há buracos tampados";
+                    textos[2] = ":)";
+                }
+                break;
+
         }
+
+        textoViewFlip.setText(textos[posFlipper]);
     }
 
 
@@ -509,8 +724,6 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
                 paginaRecenteTampando++;
                 break;
         }
-
-        new AsyncCaller().execute();
     }
 
     private void atualizarLista(){
@@ -542,25 +755,6 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
         },3000);
     }
 
-    void adapterListaRegistroAbertos(){
-        adapter = new ListaBuracoRecycleAdapter(getContext(), listaRegistrosAberto, listaRecycleRegistros, TelaRegistros.this);
-    }
-
-    void adapterListaRegistroTampados(){
-        adapter = new ListaBuracoRecycleAdapter(getContext(),listaRegistrosTampados, true, listaRecycleRegistros, TelaRegistros.this);
-    }
-
-    void adapterListaRecentesAbertos(){
-        adapter = new ListaBuracoRecycleAdapter(getContext(), listaRecentesAberto, listaRecycleRegistros, TelaRegistros.this);
-    }
-
-    void adapterListaRecentesTampados(){
-        adapter = new ListaBuracoRecycleAdapter(getContext(),listaRecentesTampados, true, listaRecycleRegistros, TelaRegistros.this);
-    }
-
-    void adapterListaCriticos(){
-        adapter = new ListaBuracoRecycleAdapter(getContext(), listaCriticos, listaRecycleRegistros, TelaRegistros.this, true);
-    }
 
 
     //----------------------------------------------------------------------------------------
@@ -612,7 +806,7 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
         if (item.getTitle() == "Excluir Registro")
         {
-            Log.d("position", "" + positionDaLista);
+            excluirBuraco();
         }
 
         if (item.getTitle() == "Informações")
@@ -622,7 +816,7 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
         if (item.getTitle() == "Tampar buraco")
         {
-            Log.d("position", "" + positionDaLista);
+            tamparBuraco();
         }
 
         return true;
@@ -633,6 +827,35 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
     public void recyclerViewListClicked(View v, int position) {
         positionDaLista = position;
         registraContextMenu(v);
+    }
+
+
+
+    //----------------------------------------------------------------------------------------
+    //                     METODOS DE MANIPULACAO DO POPOUP MENU
+    //----------------------------------------------------------------------------------------
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // TODO Add your menu entries here
+        menu.add("Mapear todos");
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (item.getTitle() == "Mapear todos"){
+            mapearTodos();
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
 
@@ -666,6 +889,31 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
     public void mostrarInformacaoDoBuraco(){
 
         final Buraco buracoDaLista = adapter.getItem(positionDaLista);
+
+        String dataRegistro = "";
+        String dataTampado = "";
+
+        try {
+            long timestamp = Long.parseLong(buracoDaLista.getData_Registro()) * 1000L;
+
+            DateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            Date netDate = (new Date(timestamp));
+            dataRegistro =  sdf.format(netDate);
+
+            if(buracoDaLista.getDataTampado() != null){
+
+                long timestamp2 = Long.parseLong(buracoDaLista.getDataTampado()) * 1000L;
+
+                DateFormat sdf2 = new SimpleDateFormat("dd-MM-yyyy");
+                Date netDate2 = (new Date(timestamp2));
+                dataTampado =  sdf2.format(netDate2);
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+
         AlertDialog alertar;
         AlertDialog.Builder mensagemInfo = new AlertDialog.Builder(getContext());
         mensagemInfo.setTitle("Informações do Registro: ");
@@ -673,23 +921,16 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
         switch (qualLista){
             case 1:
                 mensagemInfo.setMessage(
-                                "Id: " + buracoDaLista.getIdBuraco() +
-                                "\nEndereço: " + buracoDaLista.getRua() +
+                                "Endereço: " + buracoDaLista.getRua() +
                                 "\nCidade: " + buracoDaLista.getCidade() + " - " + buracoDaLista.getEstado() +
-                                "\nData de Registro: " + buracoDaLista.getData_Registro() +
+                                "\nData de Registro: " + dataRegistro +
                                 "\nLatitude: " + buracoDaLista.getLatitude() +
                                 "\nLongitude: " + buracoDaLista.getLongitude() +
                                 "\nStatus: " + buracoDaLista.getStatusBuraco());
 
                 mensagemInfo.setNeutralButton(" Tampar ", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        tamparBuraco(buracoDaLista);
-                    }
-                });
-
-                mensagemInfo.setNeutralButton(" Excluir ", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        msgExcluirBuraco(buracoDaLista);
+                        tamparBuraco();
                     }
                 });
 
@@ -697,18 +938,17 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
             case 2:
                 mensagemInfo.setMessage(
-                        "Id: " + buracoDaLista.getIdBuraco() +
-                                "\nEndereço: " + buracoDaLista.getRua() +
+                                "Endereço: " + buracoDaLista.getRua() +
                                 "\nCidade: " + buracoDaLista.getCidade() + " - " + buracoDaLista.getEstado() +
-                                "\nData de Registro: " + buracoDaLista.getData_Registro() +
+                                "\nData de Registro: " + dataRegistro +
                                 "\nLatitude: " + buracoDaLista.getLatitude() +
                                 "\nLongitude: " + buracoDaLista.getLongitude() +
                                 "\nStatus: " + buracoDaLista.getStatusBuraco() +
-                                "\nData Tampado: " + buracoDaLista.getDataTampado());
+                                "\nData Tampado: " + dataTampado);
 
                 mensagemInfo.setNeutralButton(" Excluir ", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        msgExcluirBuraco(buracoDaLista);
+                        excluirBuraco();
                     }
                 });
 
@@ -716,10 +956,9 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
             case 3:
                 mensagemInfo.setMessage(
-                        "Id: " + buracoDaLista.getIdBuraco() +
-                                "\nEndereço: " + buracoDaLista.getRua() +
+                                "Endereço: " + buracoDaLista.getRua() +
                                 "\nCidade: " + buracoDaLista.getCidade() + " - " + buracoDaLista.getEstado() +
-                                "\nData de Registro: " + buracoDaLista.getData_Registro() +
+                                "\nData de Registro: " + dataRegistro +
                                 "\nLatitude: " + buracoDaLista.getLatitude() +
                                 "\nLongitude: " + buracoDaLista.getLongitude() +
                                 "\nStatus: " + buracoDaLista.getStatusBuraco() +
@@ -728,10 +967,9 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
             case 4:
                 mensagemInfo.setMessage(
-                        "Id: " + buracoDaLista.getIdBuraco() +
-                                "\nEndereço: " + buracoDaLista.getRua() +
+                                "Endereço: " + buracoDaLista.getRua() +
                                 "\nCidade: " + buracoDaLista.getCidade() + " - " + buracoDaLista.getEstado() +
-                                "\nData de Registro: " + buracoDaLista.getData_Registro() +
+                                "\nData de Registro: " + dataRegistro +
                                 "\nLatitude: " + buracoDaLista.getLatitude() +
                                 "\nLongitude: " + buracoDaLista.getLongitude() +
                                 "\nStatus: " + buracoDaLista.getStatusBuraco());
@@ -739,15 +977,14 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
             case 5:
                 mensagemInfo.setMessage(
-                        "Id: " + buracoDaLista.getIdBuraco() +
-                                "\nEndereço: " + buracoDaLista.getRua() +
+                                "Endereço: " + buracoDaLista.getRua() +
                                 "\nCidade: " + buracoDaLista.getCidade() + " - " + buracoDaLista.getEstado() +
-                                "\nData de Registro: " + buracoDaLista.getData_Registro() +
+                                "\nData de Registro: " + dataRegistro +
                                 "\nLatitude: " + buracoDaLista.getLatitude() +
                                 "\nLongitude: " + buracoDaLista.getLongitude() +
                                 "\nStatus: " + buracoDaLista.getStatusBuraco() +
                                 "\nOcorrencias: " + buracoDaLista.getQtdOcorrencia() +
-                                "\nData Tampado: " + buracoDaLista.getDataTampado());
+                                "\nData Tampado: " + dataTampado);
                 break;
         }
 
@@ -768,75 +1005,97 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
         alertar.show();
     }
 
-    public void tamparBuraco(Buraco buracoDaLista){
+    public void tamparBuraco(){
 
+        AlertDialog alertar;
+        AlertDialog.Builder mensagemInfo = new AlertDialog.Builder(getContext());
+        mensagemInfo.setTitle("Buraco está tampado?");
+
+        mensagemInfo.setMessage("Deseja realmente notificar que este buraco esta Tampado?");
+
+        mensagemInfo.setPositiveButton(" Sim ", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+
+                Buraco buracoDaLista = adapter.getItem(positionDaLista);
+                Long tsLong = System.currentTimeMillis()/1000;
+                String timestamp = tsLong.toString();
+                buracoDaLista.setDataTampado(timestamp);
+
+                BuracoLocalDao daoLocal = new BuracoLocalDao(getContext(), usuarioAtual.getEmail());
+                DaoFirebase dao = new DaoFirebase();
+                dao.atualizarStatusParaTampado(buracoDaLista);
+
+                try{
+
+                    daoLocal.tamparBuracoLocal(buracoDaLista);
+                    listaRegistrosAberto.remove(positionDaLista);
+
+                    listaRegistrosTampados.add(0,buracoDaLista);
+                    adapter = new ListaBuracoRecycleAdapter(getContext(), listaRegistrosAberto, listaRecycleRegistros, TelaRegistros.this);
+                    listaRecycleRegistros.setAdapter(adapter);
+                    atualizarTextos();
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                    Toast.makeText(getContext(), "Erro ao atualizar base local", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        mensagemInfo.setNegativeButton(" Cancelar ", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        alertar = mensagemInfo.create();
+        alertar.show();
     }
 
-    public void msgExcluirBuraco(Buraco buracoDaLista){
+    public void excluirBuraco(){
 
-        final Buraco buracoExcluir = buracoDaLista;
         //Exibe mensagem de alerta
         AlertDialog alertar;
         AlertDialog.Builder mensagemExlcuir = new AlertDialog.Builder(getContext());
 
-        mensagemExlcuir.setTitle("ATENÇÃO!");
-        mensagemExlcuir.setMessage("Você deseja deletar o buraco selecionado? \n \n Uma vez excluido, não será recuperado, para seus registros");
+        mensagemExlcuir.setTitle("Excluir Registro?");
+        mensagemExlcuir.setMessage("Você deseja deletar o buraco selecionado?");
 
-        mensagemExlcuir.setNeutralButton("Excluir", new DialogInterface.OnClickListener() {
-            public void onClick(final DialogInterface dialog, int which) {
+        mensagemExlcuir.setPositiveButton(" Excluir ", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
 
-                final Handler handler = new Handler();
-                new Thread(new Runnable() {
-                    public void run() {
+                Buraco buracoDaLista = adapter.getItem(positionDaLista);
+                BuracoLocalDao daoLocal = new BuracoLocalDao(getContext(), usuarioAtual.getEmail());
 
-                        boolean excluido = false;
-                        try{
-                            excluido = daoWeb.excluirBuraco(buracoExcluir);
+                try{
 
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
+                    daoLocal.deletarBuraco(buracoDaLista);
 
-                        if (excluido) {
-                            try {
+                    if(qualLista == 1){
 
-                                daoLocal.deletarBuraco(buracoExcluir);
+                        listaRegistrosAberto.remove(positionDaLista);
+                        adapter = new ListaBuracoRecycleAdapter(getContext(), listaRegistrosAberto, listaRecycleRegistros, TelaRegistros.this);
 
-                                handler.post(new Runnable() {
-                                    public void run() {
+                    }else{
 
-                                        Toast.makeText(getContext(), "Registro: " + buracoExcluir.getIdBuraco() + " deletado!", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-
-                            } catch (Exception e) {
-
-                                e.printStackTrace();
-                                handler.post(new Runnable() {
-                                    public void run() {
-                                        Toast.makeText(getContext(), "Erro ao exlcuir na base local", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            }
-                        } else {
-                            handler.post(new Runnable() {
-                                public void run() {
-                                    Toast.makeText(getContext(), "Erro ao exlcuir", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
-
-                        dialog.dismiss();
+                        listaRegistrosTampados.remove(positionDaLista);
+                        adapter = new ListaBuracoRecycleAdapter(getContext(), listaRegistrosTampados, listaRecycleRegistros, TelaRegistros.this);
                     }
-                }).start();
 
+                    listaRecycleRegistros.setAdapter(adapter);
+                    atualizarTextos();
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                    Toast.makeText(getContext(), "Erro ao atualizar base local", Toast.LENGTH_SHORT).show();
+                }
 
             }
         });
 
+        mensagemExlcuir.setNeutralButton("Cancelar", new DialogInterface.OnClickListener() {
+            public void onClick(final DialogInterface dialog, int which) {
 
-        mensagemExlcuir.setPositiveButton(" Cancelar ", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
             }
         });
@@ -846,377 +1105,25 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
     }
 
+    public void mapearTodos(){
 
-    //----------------------------------------------------------------------------------------
-    //                          OPÇÕES PARA VISUALIZAÇÃO NA VIEW
-    //----------------------------------------------------------------------------------------
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList("listaRegistros", listaRegistrosAberto);
+        bundle.putParcelableArrayList("listaRecentes", listaRecentesAberto);
+        bundle.putParcelableArrayList("listaCriticos", listaCriticos);
 
-    public void msgListaVazia(String msg){
-        Toast.makeText(getContext(), "Nao há " + msg, Toast.LENGTH_SHORT).show();
+        FragmentManager fr = getFragmentManager();
+        TelaMapa objetoDaTela = new TelaMapa();
+        FragmentTransaction fragmentTransaction = fr.beginTransaction();
+
+        objetoDaTela.setArguments(bundle);
+
+        fragmentTransaction.replace(R.id.bau_de_fragments,objetoDaTela,"TelaMapa");
+
+        fragmentTransaction.addToBackStack("TelaMapa");
+        fragmentTransaction.commit();
+
     }
 
-    boolean conexaoOk = true;
-    boolean erroRegistros = false;
-    boolean erroCriticos = false;
-    boolean erroRecentes = false;
-    int totalRecentes;
-    int totalHoje;
-    int totalTampados;
-
-    public void atualizarTextos(){
-
-        if(qualLista == 1 || qualLista == 2){
-
-            if(!erroRegistros)
-            {
-                if (!listaRegistrosAberto.isEmpty() || !listaRegistrosTampados.isEmpty())
-                {
-                    textos[0] = "ABERTOS: " + listaRegistrosAberto.size();
-                    textos[1] = "Encontrados hoje: " ;
-                    textos[2] = "Tampados: " + listaRegistrosTampados.size();
-                }else{
-                    textos[0] = "SEM REGISTROS";
-                    textos[1] = "Se soube de um buraco, notifique" ;
-                    textos[2] = ";D";
-                }
-            }else{
-                textos[0] = "Erro no acesso aos registros";
-                textos[1] = "Tente mais tarde..." ;
-                textos[2] = ":S";
-            }
-
-        }else if(qualLista == 4 || qualLista == 5){
-
-            if(conexaoOk){
-                if (!listaRecentesAberto.isEmpty() || !listaRecentesTampados.isEmpty())
-                {
-                    textos[0] = "Abertos nos ultimos 5 meses: " + totalRecentes;
-                    textos[1] = "Encontrados hoje: " + totalHoje;
-                    textos[2] = "Tampados nos ultimos 5 meses: " + totalTampados;
-                }else{
-                    textos[0] = "SEM BURACOS RECENTES";
-                    textos[1] = "Se souber de um buraco, notifique" ;
-                    textos[2] = ";D";
-                }
-            }else{
-
-                textos[0] = "SEM CONEXÃO";
-                textos[1] = "Tente mais tarde...";
-                textos[2] = "BURACOMETRO";
-
-                if(erroRecentes){
-                    textos[0] = "Ocorreu um erro...";
-                    textos[1] = "Tente mais tarde...";
-                    textos[2] = "Erro ao acessar dados recentes";
-                }
-            }
-
-        }else if(qualLista == 3){
-
-            if(conexaoOk)
-            {
-                if (!listaCriticos.isEmpty())
-                {
-                    textos[0] = "Numero de Buracos Criticos: " + listaCriticos.size();
-                    textos[1] = "Total de Ocorrências: " + 9999;
-                    textos[2] = "MAIS COISA CRITICA";
-                }else{
-                    textos[0] = "SEM BURACOS CRITICOS";
-                    textos[1] = "Se soube de um buraco, notifique" ;
-                    textos[2] = ";D";
-                }
-            }else{
-                textos[0] = "SEM CONEXÃO";
-                textos[1] = "Tente mais tarde...";
-                textos[2] = "BURACOMETRO";
-
-                if(erroCriticos){
-                    textos[0] = "Ocorreu um erro...";
-                    textos[1] = "Tente mais tarde...";
-                    textos[2] = "Erro ao acessar dados criticos";
-                }
-            }
-        }
-        textoViewFlip.setText(textos[posFlipper]);
-    }
-
-    //----------------------------------------------------------------------------------------
-    //                      CLASSE PARA CARREGAR LISTAS EM THREADS
-    //----------------------------------------------------------------------------------------
-    private class AsyncCaller extends AsyncTask<Void, Void, Void>
-    {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            if (!carregaMaisDaLista){
-                ArrayList<Buraco> listaBojo = new ArrayList<Buraco>();
-                adapter = new ListaBuracoRecycleAdapter(getContext(), listaBojo, listaRecycleRegistros, TelaRegistros.this);
-                listaRecycleRegistros.setAdapter(adapter);
-
-                progressBar.setVisibility(View.VISIBLE);
-
-                textos[0] = "Carregando...";
-                textos[1] = "...";
-                textos[2] = "Aguarde um momento...";
-                textoViewFlip.setText(textos[posFlipper]);
-
-                btnOpcTampados.setClickable(false);
-            }
-        }
-
-        boolean erroCarregarMais = false;
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            if(!carregaMaisDaLista){
-                switch (qualLista){
-
-                    case 1:
-                    case 2:
-                        try{
-
-                            listaRegistrosAberto = daoLocal.buscaBuracos();
-                            adapterListaRegistroAbertos();
-                            inicializadoRegistroAberto = true;
-
-                            listaRegistrosTampados = daoLocal.buscaBuracosTampados();
-                            inicializadoRegistroTampados = true;
-
-                            erroRegistros = false;
-
-                        }catch (Exception e){
-                            e.printStackTrace();
-                            erroRegistros = true;
-                        }
-                        break;
-
-                    case 3:
-
-                        new DaoFirebase().listarBuracosCriticos(new OnGetFirebaseBuracosListener() {
-
-                            @Override
-                            public void onStart() {
-                            }
-
-                            @Override
-                            public void onRetornoLista(ArrayList<Buraco> buracos){
-
-                                //Log.e("Buraquim2", "" + buracos.get(0).getIdBuraco());
-                                //Log.e("Buraquim3", "" + buracos.get(1).getIdBuraco());
-
-                                try{
-                                    listaCriticos = buracos;
-                                    adapterListaCriticos();
-
-                                    conexaoOk = true;
-                                    erroCriticos = false;
-                                    inicializadoCriticos = true;
-
-                                }catch (Exception e) {
-                                    erroCriticos = true;
-                                    Log.e("Errouuuuu", "Exception");
-                                    e.printStackTrace();
-                                }
-
-                            }
-
-                            @Override
-                            public void onFailed(DatabaseError databaseError) {
-                                //DO SOME THING WHEN GET DATA FAILED HERE
-                            }
-
-                            @Override
-                            public void onRetornoExiste(Boolean existe){
-                                //DO SOME THING WHEN GET DATA FAILED HERE
-                            }
-
-                            @Override
-                            public void onRetornoBuraco(Buraco buraco) {
-                                //DO SOME THING WHEN GET DATA FAILED HERE
-                            }
-
-                        });
-
-
-                        /* * /
-                        try{
-                            listaCriticos = daoWeb.buscarMaisCriticos(0);
-                            adapterListaCriticos();
-
-                            conexaoOk = true;
-                            erroCriticos = false;
-                            inicializadoCriticos = true;
-
-                        }catch (ConnectException e){
-                            conexaoOk = false;
-                            Log.e("Errouuuuu", "ConnectException");
-
-                        }catch (SocketTimeoutException e){
-                            conexaoOk = false;
-                            Log.e("Errouuuuu", "SocketTimeoutException");
-
-                        }catch (Exception e) {
-                            erroCriticos = true;
-                            Log.e("Errouuuuu", "Exception");
-                            e.printStackTrace();
-                        }
-                        /* */
-
-                        break;
-
-                    case 4:
-                    case 5:
-                        try{
-                            listaRecentesAberto = daoWeb.buscarBuracosRecentes(0);
-                            listaRecentesTampados = daoWeb.buscarBuracosTampados(0);
-
-                            totalRecentes = daoWeb.buscaTotalDeBuracosRecentes();
-                            totalHoje = daoWeb.buscaTotalDeBuracosAbertoHoje();
-                            totalTampados = daoWeb.buscaTotalDeBuracosTampados();
-
-                            adapterListaRecentesAbertos();
-
-                            inicializadoRecentesAberto = true;
-                            inicializadoRecentesTampados = true;
-                            conexaoOk = true;
-                            erroRecentes = false;
-
-                        }catch (ConnectException e){
-                            conexaoOk = false;
-                            Log.e("Errouuuuu", "ConnectException");
-
-                        }catch (SocketTimeoutException e){
-                            conexaoOk = false;
-                            Log.e("Errouuuuu", "SocketTimeoutException");
-
-                        }catch (Exception e) {
-                            erroRecentes = true;
-                            Log.e("Errouuuuu", "Exception");
-                            e.printStackTrace();
-                        }
-                        break;
-                }
-            }else{
-
-                ArrayList<Buraco> listaLoad = new ArrayList<Buraco>();
-
-                switch (qualLista){
-
-                    case 3:
-
-                        new DaoFirebase().listarBuracosCriticos(new OnGetFirebaseBuracosListener() {
-
-                            @Override
-                            public void onStart() {
-                            }
-
-                            @Override
-                            public void onRetornoLista(ArrayList<Buraco> buracos){
-
-                                //Log.e("Buraquim2", "" + buracos.get(0).getIdBuraco());
-                                //Log.e("Buraquim3", "" + buracos.get(1).getIdBuraco());
-
-                                try{
-                                    listaCriticos = buracos;
-
-                                    conexaoOk = true;
-                                    erroCriticos = false;
-                                    inicializadoCriticos = true;
-
-                                }catch (Exception e) {
-                                    erroCriticos = true;
-                                    Log.e("Errouuuuu", "Exception");
-                                    e.printStackTrace();
-                                }
-
-                            }
-
-                            @Override
-                            public void onFailed(DatabaseError databaseError) {
-                                //DO SOME THING WHEN GET DATA FAILED HERE
-                            }
-
-                            @Override
-                            public void onRetornoExiste(Boolean existe){
-                                //DO SOME THING WHEN GET DATA FAILED HERE
-                            }
-
-                            @Override
-                            public void onRetornoBuraco(Buraco buraco) {
-                                //DO SOME THING WHEN GET DATA FAILED HERE
-                            }
-
-                        });
-
-                        /* * /
-                        try {
-                            listaLoad = daoWeb.buscarMaisCriticos(paginaCriticos);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            erroCarregarMais = true;
-                        }
-
-                        for (int i = 0; i < listaLoad.size(); i++) {
-                            listaCriticos.add(listaLoad.get(i));
-                        }
-                        /* */
-
-                        break;
-
-                    case 4:
-                        try {
-                            listaLoad = daoWeb.buscarBuracosRecentes(paginaRecente);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            erroCarregarMais = true;
-                        }
-
-                        for (int i = 0; i < listaLoad.size(); i++) {
-                            listaRecentesAberto.add(listaLoad.get(i));
-                        }
-                        break;
-
-                    case 5:
-                        try {
-                            listaLoad = daoWeb.buscarBuracosTampados(paginaRecenteTampando);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            erroCarregarMais = true;
-                        }
-
-                        for (int i = 0; i < listaLoad.size(); i++) {
-                            listaRecentesTampados.add(listaLoad.get(i));
-                        }
-                        break;
-                }
-
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            super.onPostExecute(result);
-
-            if (!carregaMaisDaLista){
-                progressBar.setVisibility(View.INVISIBLE);
-                listaRecycleRegistros.setAdapter(adapter);
-                atualizarTextos();
-            }else{
-                adapter.notifyDataSetChanged();
-                adapter.setLoaded();
-                swipyRefreshLayout.setRefreshing(false);
-                if(erroCarregarMais){
-                    Toast.makeText(getContext(), "Erro ao atualizar dados", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            btnOpcTampados.setClickable(true);
-            carregaMaisDaLista = false;
-            erroCarregarMais = false;
-        }
-    }
 
 }

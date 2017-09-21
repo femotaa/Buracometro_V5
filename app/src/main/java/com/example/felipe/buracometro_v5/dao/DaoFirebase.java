@@ -18,24 +18,22 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DaoFirebase {
 
     DatabaseReference databaseUsuarios;
-    DatabaseReference databaseBuracos;
-
 
     public DaoFirebase(){
 
         databaseUsuarios = FirebaseDatabase.getInstance().getReference("Usuarios");
-
     }
 
 
     //----------------------------------------------------------------------------------------
-    //                         METODOS PARA INSERCAO DE BURACOS
+    //                          METODOS PARA INSERCAO DE BURACOS
     //----------------------------------------------------------------------------------------
 
     OnGetFirebaseBuracosListener listenerBuraco;
@@ -54,6 +52,9 @@ public class DaoFirebase {
             }
 
             @Override
+            public void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados){}
+
+            @Override
             public void onFailed(DatabaseError databaseError) {
             }
 
@@ -68,9 +69,9 @@ public class DaoFirebase {
 
                     inserirOnlyBuraco(mburaco);
                     inserirBuracoUsuario(mburaco, mUsuario);
-                    atualizaCidadeQtdBuracos(mburaco);
-                    atualizaRuaQtdBuracos(mburaco);
-
+                    atualizaCidadeQtdBuracos(true, mburaco);
+                    atualizaRuaQtdBuracos(true, mburaco);
+                    atualizaTotalDeBuracosAbertos(true);
                     validaSeTemBuracoIndevidoTampado(mburaco);
 
                 }else{
@@ -85,7 +86,7 @@ public class DaoFirebase {
 
     }
 
-    public void inserirOnlyBuraco(Buraco buraco){
+    private void inserirOnlyBuraco(Buraco buraco){
 
         DatabaseReference databaseBura;
 
@@ -98,7 +99,7 @@ public class DaoFirebase {
 
     }
 
-    public void inserirBuracoUsuario(Buraco buraco, Usuario usuario){
+    private void inserirBuracoUsuario(Buraco buraco, Usuario usuario){
 
         DatabaseReference databaseBura;
 
@@ -113,11 +114,15 @@ public class DaoFirebase {
 
     }
 
-    public void inserirBuracoTampado (Buraco buraco){
+    private void inserirBuracoTampado (Buraco buraco){
 
         DatabaseReference databaseBura;
 
+        Long tsLong = System.currentTimeMillis()/1000;
+        String timestamp = tsLong.toString();
+
         buraco.setStatusBuraco("Tampado");
+        buraco.setDataTampado(timestamp);
 
         databaseBura = FirebaseDatabase.getInstance().getReference("Buracos").child("Tampados");
 
@@ -130,10 +135,10 @@ public class DaoFirebase {
 
 
     //----------------------------------------------------------------------------------------
-    //                       METODOS PARA VALIDAR SE BURACO EXISTE
+    //                         METODOS PARA VALIDAR SE BURACO EXISTE
     //----------------------------------------------------------------------------------------
 
-    public void isBuracoExiste(Buraco buraco, OnGetFirebaseBuracosListener listener2){
+    private void isBuracoExiste(Buraco buraco, OnGetFirebaseBuracosListener listener2){
 
         listenerBuraco = listener2;
         listenerBuraco.onStart();
@@ -152,8 +157,6 @@ public class DaoFirebase {
                     for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
 
                         Buraco buraco = messageSnapshot.getValue(Buraco.class);
-                        Log.e("BuraquimExiste", "ID: " + buraco.getIdBuraco());
-
                         listenerBuraco.onRetornoBuraco(buraco);
                     }
 
@@ -171,7 +174,7 @@ public class DaoFirebase {
 
     }
 
-    public void temBuracoParaUsuario(final Buraco buraquim, final Usuario usuariim){
+    private void temBuracoParaUsuario(final Buraco buraquim, final Usuario usuariim){
 
         DatabaseReference databaseBura;
 
@@ -184,16 +187,10 @@ public class DaoFirebase {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                Log.e("DataSnapTem", dataSnapshot.toString());
-                Log.e("USUER", usuariim.getId());
-
                 if(!dataSnapshot.exists()){
 
                     atualizaQtdOcorrencia(buraquim);
                     inserirBuracoUsuario(buraquim,usuariim);
-
-                    Log.e("NNNN", "Não tem buraco para usuario");
-
 
                 }else{
 
@@ -211,7 +208,7 @@ public class DaoFirebase {
 
     }
 
-    public void validaSeTemBuracoIndevidoTampado(Buraco buraco){
+    private void validaSeTemBuracoIndevidoTampado(Buraco buraco){
 
         DatabaseReference databaseBura;
 
@@ -227,8 +224,6 @@ public class DaoFirebase {
                     for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
 
                         messageSnapshot.getRef().removeValue();
-                        Log.e("BuraquimDeletado", "DELETADOOOO");
-
                         //deletarBuraco(buracoComID);
                         //atualizaStatusBuracoUsuarios(buracoComID);
 
@@ -251,231 +246,8 @@ public class DaoFirebase {
 
 
     //----------------------------------------------------------------------------------------
-    //                       METODOS PARA ATUALIZAR DADOS DO BURACOS
+    //                        METODOS PARA ATUALIZAR DADOS DO BURACOS
     //----------------------------------------------------------------------------------------
-
-    public void atualizaQtdOcorrencia(Buraco buraco){
-
-
-        final DatabaseReference databaseBura = FirebaseDatabase.getInstance().getReference("Buracos").child("Abertos");
-        final Query query = databaseBura.orderByChild("idBuraco").equalTo(buraco.getIdBuraco());
-
-
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                Log.e("DataSnapchot", dataSnapshot.toString());
-
-                for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
-
-                    Buraco bura = messageSnapshot.getValue(Buraco.class);
-                    bura.setQtdOcorrencia(bura.getQtdOcorrencia() + 1);
-
-                    databaseBura.child(bura.getIdBuraco()).setValue(bura);
-                    Log.e("UpdateBura", bura.getIdBuraco() + " " + bura.getQtdOcorrencia());
-
-                }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
-    public void atualizaCidadeQtdBuracos(Buraco buraco) {
-
-        final Buraco bura = buraco;
-
-        final DatabaseReference databaseCidade = FirebaseDatabase.getInstance().getReference("CidadeQtdBuracos");
-        final Query query = databaseCidade.orderByChild("cidade").equalTo(buraco.getCidade());
-
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                Log.e("DataSnapchot", dataSnapshot.toString());
-
-                if (dataSnapshot.exists()){
-
-                    for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
-
-                        Cidade cidade = messageSnapshot.getValue(Cidade.class);
-                        cidade.qtd = cidade.qtd + 1;
-
-                        databaseCidade.child(cidade.cidade).setValue(cidade);
-                        Log.e("UptadeCidade", cidade.cidade + " " + cidade.qtd);
-
-                    }
-
-                }else{
-
-                    Cidade cidade = new Cidade();
-
-                    try{
-                        cidade.cidade = bura.getCidade();
-                        cidade.estado = bura.getEstado();
-                        cidade.qtd = 1;
-                        databaseCidade.child(cidade.cidade).setValue(cidade);
-
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
-    public void atualizaRuaQtdBuracos(Buraco buraco){
-
-        final Buraco bura = buraco;
-
-        final DatabaseReference databaseRua = FirebaseDatabase.getInstance().getReference("RuaMaisBuracos");
-        final Query query = databaseRua.orderByChild("rua").equalTo(buraco.getRua());
-
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                Log.e("DataSnapRUA", dataSnapshot.toString());
-
-                if (dataSnapshot.exists()){
-
-                    for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
-
-                        Rua rua  = messageSnapshot.getValue(Rua.class);
-                        rua.qtd = rua.qtd + 1;
-
-                        databaseRua.child(rua.rua).setValue(rua);
-                        Log.e("Uptaderua", rua.rua + " " + rua.qtd);
-
-                    }
-
-                }else{
-
-                    Rua rua = new Rua();
-
-                    try{
-
-                        rua.rua = bura.getRua();
-                        rua.cidade = bura.getCidade();
-                        rua.estado = bura.getEstado();
-                        rua.qtd = 1;
-                        databaseRua.child(rua.rua).setValue(rua);
-
-                    }catch(Exception e){
-                        e.printStackTrace();
-                    }
-                }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-
-
-    }
-
-    public void removeCidadeQtdBuracos(Buraco buraco) {
-
-        final DatabaseReference databaseCidade = FirebaseDatabase.getInstance().getReference("CidadeQtdBuracos");
-        final Query query = databaseCidade.orderByChild("cidade").equalTo(buraco.getCidade());
-
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                if (dataSnapshot.exists()){
-
-                    for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
-
-                        Cidade cidade = messageSnapshot.getValue(Cidade.class);
-
-                        if(cidade.qtd == 1){
-
-                            messageSnapshot.getRef().removeValue();
-                            Log.e("CidadeRemovida", "Removida");
-
-
-                        }else{
-
-                            cidade.qtd = cidade.qtd - 1;
-                            databaseCidade.child(cidade.cidade).setValue(cidade);
-                            Log.e("UptadeCidade", cidade.cidade + " " + cidade.qtd);
-                        }
-                    }
-                }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
-    public void removeRuaQtdBuracos(Buraco buraco){
-
-        final DatabaseReference databaseRua = FirebaseDatabase.getInstance().getReference("RuaMaisBuracos");
-        final Query query = databaseRua.orderByChild("rua").equalTo(buraco.getRua());
-
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                if (dataSnapshot.exists()){
-
-                    for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
-
-                        Rua rua  = messageSnapshot.getValue(Rua.class);
-
-                        if(rua.qtd == 1){
-
-                            messageSnapshot.getRef().removeValue();
-                            Log.e("RuaRemovida", "Removida");
-
-                        }else{
-
-                            rua.qtd = rua.qtd + 1;
-                            databaseRua.child(rua.rua).setValue(rua);
-                            Log.e("Uptaderua", rua.rua + " " + rua.qtd);
-
-                        }
-
-
-
-
-                    }
-                }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-
-
-    }
 
     public void atualizarStatusParaTampado(Buraco buraco){
 
@@ -496,11 +268,10 @@ public class DaoFirebase {
                         messageSnapshot.getRef().removeValue();
 
                         inserirBuracoTampado(buraco);
-                        removeCidadeQtdBuracos(buraco);
-                        removeRuaQtdBuracos(buraco);
-
-                        Log.e("BuraquimTampado", "Removido");
-
+                        atualizaCidadeQtdBuracos(false, buraco);
+                        atualizaRuaQtdBuracos(false, buraco);
+                        atualizaTotalDeBuracosTampados(true);
+                        atualizaTotalDeBuracosAbertos(false);
                     }
 
                 }
@@ -515,40 +286,60 @@ public class DaoFirebase {
 
     }
 
-    public void atualizarStatusParaTampadoUsuarios(Buraco buraco){
+    private void atualizaCidadeQtdBuracos(final boolean somar, Buraco buraco) {
 
+        final Buraco bura = buraco;
 
-        DatabaseReference databaseBura;
-        databaseBura = FirebaseDatabase.getInstance().getReference("BuracosUsuario");
-        String chave  = FirebaseDatabase.getInstance().getReference("BuracosUsuario").getKey();
-
-        databaseBura = FirebaseDatabase.getInstance().getReference("BuracosUsuario").child(chave);
-
-        final Query query = databaseBura.orderByChild("latitudeLongitude").equalTo(buraco.getLatitudeLongitude());
-
-
+        final DatabaseReference databaseCidade = FirebaseDatabase.getInstance().getReference("CidadeQtdBuracos");
+        final Query query = databaseCidade.orderByChild("cidade").equalTo(buraco.getCidade());
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                Log.e("dataSnapshot", "" + dataSnapshot);
+                if(somar){
 
-                for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
+                    if (dataSnapshot.exists()){
 
-                    Log.e("messageSnapshot", "" + messageSnapshot);
+                        for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
 
+                            Cidade cidade = messageSnapshot.getValue(Cidade.class);
+                            cidade.qtd = cidade.qtd + 1;
 
-                    for (DataSnapshot buracoSnapshot: messageSnapshot.getChildren()) {
+                            databaseCidade.child(cidade.cidade).setValue(cidade);
+                        }
 
-                        Log.e("buracoSnapshot", "" + buracoSnapshot);
+                    }else{
 
-                        Buraco bura = buracoSnapshot.getValue(Buraco.class);
-                        Log.e("Buraquim", "" + bura.getRua());
+                        Cidade cidade = new Cidade();
 
+                        try{
+                            cidade.cidade = bura.getCidade();
+                            cidade.estado = bura.getEstado();
+                            cidade.qtd = 1;
+                            databaseCidade.child(cidade.cidade).setValue(cidade);
+
+                        }catch(Exception e){
+                            e.printStackTrace();
+                        }
                     }
 
+                }else{
 
+                    for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
+
+                        Cidade cidade = messageSnapshot.getValue(Cidade.class);
+
+                        if(cidade.qtd == 1){
+
+                            messageSnapshot.getRef().removeValue();
+
+                        }else{
+
+                            cidade.qtd = cidade.qtd - 1;
+                            databaseCidade.child(cidade.cidade).setValue(cidade);
+                        }
+                    }
                 }
 
             }
@@ -558,14 +349,113 @@ public class DaoFirebase {
 
             }
         });
+
+    }
+
+    private void atualizaRuaQtdBuracos(final boolean somar, Buraco buraco){
+
+        final Buraco bura = buraco;
+
+        final DatabaseReference databaseRua = FirebaseDatabase.getInstance().getReference("RuaMaisBuracos");
+        final Query query = databaseRua.orderByChild("rua").equalTo(buraco.getRua());
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                if(somar){
+
+                    if (dataSnapshot.exists()){
+
+                        for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
+
+                            Rua rua  = messageSnapshot.getValue(Rua.class);
+                            rua.qtd = rua.qtd + 1;
+
+                            databaseRua.child(rua.rua).setValue(rua);
+                        }
+
+                    }else{
+
+                        Rua rua = new Rua();
+
+                        try{
+
+                            rua.rua = bura.getRua();
+                            rua.cidade = bura.getCidade();
+                            rua.estado = bura.getEstado();
+                            rua.qtd = 1;
+                            databaseRua.child(rua.rua).setValue(rua);
+
+                        }catch(Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+
+
+                }else{
+                    for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
+
+                        Rua rua  = messageSnapshot.getValue(Rua.class);
+
+                        if(rua.qtd == 1){
+
+                            messageSnapshot.getRef().removeValue();
+
+                        }else{
+
+                            rua.qtd = rua.qtd - 1;
+                            databaseRua.child(rua.rua).setValue(rua);
+                        }
+
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+
+    }
+
+    private void atualizaQtdOcorrencia(Buraco buraco){
+
+        final DatabaseReference databaseBura = FirebaseDatabase.getInstance().getReference("Buracos").child("Abertos");
+        final Query query = databaseBura.orderByChild("idBuraco").equalTo(buraco.getIdBuraco());
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
+
+                    Buraco bura = messageSnapshot.getValue(Buraco.class);
+                    bura.setQtdOcorrencia(bura.getQtdOcorrencia() + 1);
+
+                    databaseBura.child(bura.getIdBuraco()).setValue(bura);
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
 
     //----------------------------------------------------------------------------------------
-    //                                 METODOS DE TOTAIS
+    //                           METODOS DE TOTAIS E ESTATISTICAS
     //----------------------------------------------------------------------------------------
 
-    public void atualizaTotalDeBuracosAbertos(final boolean somar) {
+    private void atualizaTotalDeBuracosAbertos(final boolean somar) {
 
         final DatabaseReference databaseTotal = FirebaseDatabase.getInstance().getReference("Totais").child("Abertos");
 
@@ -584,11 +474,9 @@ public class DaoFirebase {
                     }
 
                     databaseTotal.setValue(totalAberto);
-                    Log.e("TotalAberto", ""+ totalAberto);
 
                 }else{
 
-                    Log.e("T", "kjkj");
                     databaseTotal.setValue(1);
 
                 }
@@ -603,7 +491,7 @@ public class DaoFirebase {
 
     }
 
-    public void atualizaTotalDeBuracosTampados(final boolean somar) {
+    private void atualizaTotalDeBuracosTampados(final boolean somar) {
 
         final DatabaseReference databaseTotal = FirebaseDatabase.getInstance().getReference("Totais").child("Tampados");
 
@@ -622,13 +510,10 @@ public class DaoFirebase {
                     }
 
                     databaseTotal.setValue(totalTampado);
-                    Log.e("totalTampado", ""+ totalTampado);
 
                 }else{
 
-                    Log.e("TT", "huhuhu");
                     databaseTotal.setValue(1);
-
                 }
 
             }
@@ -641,7 +526,49 @@ public class DaoFirebase {
 
     }
 
-    public void pegarTotaldeBuracosAbertos (final OnGetFirebaseDados listener){
+    public void pegarTotaldeBuracos (boolean buscarTampado, final OnGetFirebaseDados listener){
+
+        listener.onStart();
+
+        DatabaseReference databaseTotal;
+
+        if (buscarTampado){
+            databaseTotal = FirebaseDatabase.getInstance().getReference("Totais").child("Abertos");
+        }else{
+            databaseTotal = FirebaseDatabase.getInstance().getReference("Totais").child("Tampados");
+        }
+
+        databaseTotal.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                if (dataSnapshot.exists()){
+
+                    int totalAberto = dataSnapshot.getValue(Integer.class);
+                    listener.onRetornoDados(totalAberto);
+
+                }else{
+
+                    listener.onRetornoDados(0);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    public int totalDeBuracosAbertosHoje (){
+
+        int total = 0;
+
+        return total;
+    }
+
+    public void buscarRegistrosDaCidade (final boolean buscarComMais, final OnGetFirebaseDados listener){
 
         listener.onStart();
 
@@ -653,12 +580,52 @@ public class DaoFirebase {
 
                 if (dataSnapshot.exists()){
 
-                    int totalAberto = dataSnapshot.getValue(Integer.class);
-                    listener.onRetornoDados(totalAberto);
+                    final int totalAberto = dataSnapshot.getValue(Integer.class);
+
+                    if (totalAberto > 0){
+
+                        final DatabaseReference databaseCidade = FirebaseDatabase.getInstance().getReference("CidadeQtdBuracos");
+
+                        Query query;
+
+                        if(buscarComMais){
+                            query = databaseCidade.orderByChild("qtd").limitToLast(3);
+                        }else{
+                            query = databaseCidade.orderByChild("qtd");
+                        }
+
+                        query.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                ArrayList<Cidade> listaCidades = new ArrayList<Cidade>();
+
+                                for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
+
+                                    Cidade cidade = messageSnapshot.getValue(Cidade.class);
+                                    listaCidades.add(cidade);
+                                }
+
+                                if(buscarComMais){
+                                    Collections.reverse(listaCidades);
+                                }
+                                listener.registrosDaCidade(totalAberto,listaCidades);
+
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+
+                    }else{
+                        listener.ruaComMaisRegistro(0,null);
+                    }
 
                 }else{
 
-                    listener.onRetornoDados(0);
+                    listener.ruaComMaisRegistro(0,null);
                 }
             }
 
@@ -670,25 +637,64 @@ public class DaoFirebase {
 
     }
 
-    public void pegarTotaldeBuracosTampados (final OnGetFirebaseDados listener){
+    public void ruaComMaisBuracos (final OnGetFirebaseDados listener){
 
         listener.onStart();
 
-        final DatabaseReference databaseTotal = FirebaseDatabase.getInstance().getReference("Totais").child("Tampados");
+        final DatabaseReference databaseRua = FirebaseDatabase.getInstance().getReference("RuaMaisBuracos");
+        final Query query = databaseRua.orderByChild("qtd").limitToLast(3);
 
-        databaseTotal.addListenerForSingleValueEvent(new ValueEventListener() {
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                if (dataSnapshot.exists()){
+                ArrayList<Rua> listaRuas = new ArrayList<Rua>();
 
-                    int totalAberto = dataSnapshot.getValue(Integer.class);
-                    listener.onRetornoDados(totalAberto);
+                for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
 
-                }else{
-
-                    listener.onRetornoDados(0);
+                    Rua rua  = messageSnapshot.getValue(Rua.class);
+                    listaRuas.add(rua);
                 }
+
+                Collections.reverse(listaRuas);
+                listener.ruaComMaisRegistro(0,listaRuas);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+    }
+
+    public void listarBuracosMaisAntigos (final OnGetFirebaseBuracosListener listener){
+
+        listener.onStart();
+
+        DatabaseReference databaseBura;
+
+        listaBuraco = new ArrayList<Buraco>();
+
+        databaseBura = FirebaseDatabase.getInstance().getReference("Buracos").child("Abertos");
+        final Query query = databaseBura.orderByChild("data_Registro").limitToFirst(3);
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
+
+                    Buraco bura = messageSnapshot.getValue(Buraco.class);
+                    listaBuraco.add(bura);
+                }
+
+                //Collections.reverse(listaBuraco);
+                listener.onRetornoLista(listaBuraco);
+
             }
 
             @Override
@@ -705,31 +711,95 @@ public class DaoFirebase {
     //----------------------------------------------------------------------------------------
 
 
-    public void listarBuracosPorUsuario (Usuario usuario, OnGetFirebaseBuracosListener listener2){
+    ArrayList<String> listaDeIdsDoUsuario;
+    private int i = 0;
+    private int y;
+    private int z;
+    public void listarBuracosPorUsuario (Usuario usuario, final OnGetFirebaseBuracosListener listener){
 
+        listaDeIdsDoUsuario = new ArrayList<String>();
         listaBuraco = new ArrayList<Buraco>();
-        listenerBuraco = listener2;
-        listenerBuraco.onStart();
+        listener.onStart();
 
-        databaseBuracos = FirebaseDatabase.getInstance().getReference("BuracosUsuario").child(usuario.getId());
+        DatabaseReference databaseBura;
+        databaseBura = FirebaseDatabase.getInstance().getReference("BuracosUsuario").child(usuario.getId());
+        final DatabaseReference databaseBuraAbertos = FirebaseDatabase.getInstance().getReference("Buracos").child("Abertos");
+        final DatabaseReference databaseBuraTampados= FirebaseDatabase.getInstance().getReference("Buracos").child("Tampados");
 
 
-        databaseBuracos.addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseBura.addListenerForSingleValueEvent(new ValueEventListener() {
+
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
 
                 for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
 
-
-                    Buraco bura = messageSnapshot.getValue(Buraco.class);
-                    listaBuraco.add(bura);
-
-                    Log.e("Buraquim", "" + bura.getRua());
+                    String idBuraco = messageSnapshot.child("idBuraco").getValue().toString();
+                    listaDeIdsDoUsuario.add(idBuraco);
 
                 }
 
-                listenerBuraco.onRetornoLista(listaBuraco);
+
+                if(!listaDeIdsDoUsuario.isEmpty()){
+
+                    z = 0;
+                    y = 0;
+                    for(i = 0; i<listaDeIdsDoUsuario.size(); i++) {
+
+                        Query query = databaseBuraAbertos.orderByChild("idBuraco").equalTo(listaDeIdsDoUsuario.get(i).toString());
+                        query.addListenerForSingleValueEvent(new ValueEventListener() {
+
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
+
+                                    Buraco bura = messageSnapshot.getValue(Buraco.class);
+                                    listaBuraco.add(bura);
+                                }
+
+                                Query query2 = databaseBuraTampados.orderByChild("idBuraco").equalTo(listaDeIdsDoUsuario.get(z).toString());
+                                z++;
+
+                                query2.addListenerForSingleValueEvent(new ValueEventListener() {
+
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                        for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
+
+                                            Buraco bura = messageSnapshot.getValue(Buraco.class);
+                                            listaBuraco.add(bura);
+                                        }
+
+                                        y++;
+
+                                        if(z == listaDeIdsDoUsuario.size() && y == listaDeIdsDoUsuario.size()){
+                                            listener.onRetornoLista(listaBuraco);
+                                        }
+
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+
+                    }
+
+                }else{
+                    listener.onRetornoLista(listaBuraco);
+                }
 
 
             }
@@ -742,18 +812,20 @@ public class DaoFirebase {
 
     }
 
-    public void listarBuracosRecentesAbertos (int pagina, OnGetFirebaseBuracosListener listener2){
+    ArrayList<Buraco> listaBuracoAbertos = new ArrayList<Buraco>();
+    ArrayList<Buraco> listaBuracosTampados = new ArrayList<Buraco>();
+    public void listarBuracosRecentes (int pagina, final OnGetFirebaseBuracosListener listener){
 
-        int indice = pagina * 20;
+        final int indice = pagina * 20;
         DatabaseReference databaseBura;
 
+        listaBuracoAbertos = new ArrayList<Buraco>();
+        listaBuracosTampados = new ArrayList<Buraco>();
 
-        listaBuraco = new ArrayList<Buraco>();
-        listenerBuraco = listener2;
-        listenerBuraco.onStart();
+        listener.onStart();
 
         databaseBura = FirebaseDatabase.getInstance().getReference("Buracos").child("Abertos");
-        final Query query = databaseBura.orderByChild("data_Registro").startAt(indice).limitToFirst(20);//.equalTo("Aberto", "statusBuraco");
+        final Query query = databaseBura.orderByChild("data_Registro").startAt(indice).limitToFirst(20);
 
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -764,15 +836,39 @@ public class DaoFirebase {
                 for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
 
                     Buraco bura = messageSnapshot.getValue(Buraco.class);
-                    listaBuraco.add(bura);
-
-                    Log.e("BuraquimTodos", bura.getIdBuraco());
-
+                    listaBuracoAbertos.add(bura);
                 }
 
-                listenerBuraco.onRetornoLista(listaBuraco);
 
+                DatabaseReference databaseBura2 = FirebaseDatabase.getInstance().getReference("Buracos").child("Tampados");
+                final Query query2 = databaseBura2.orderByChild("dataTampado").startAt(indice).limitToFirst(20);
+
+                query2.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+
+                        for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
+
+                            Buraco bura = messageSnapshot.getValue(Buraco.class);
+
+                            listaBuracosTampados.add(bura);
+
+                        }
+
+                        Collections.reverse(listaBuracoAbertos);
+                        Collections.reverse(listaBuracosTampados);
+                        listener.onRetornoDuasLista(listaBuracoAbertos, listaBuracosTampados);
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
             }
+
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
@@ -782,71 +878,30 @@ public class DaoFirebase {
 
     }
 
-    public void listarBuracosRecentesTampados (int pagina, OnGetFirebaseBuracosListener listener2){
+    public void listarBuracosCriticos (final OnGetFirebaseBuracosListener listener){
 
-        int indice = pagina * 20;
-        DatabaseReference databaseBura;
-
-        listaBuraco = new ArrayList<Buraco>();
-        listenerBuraco = listener2;
-        listenerBuraco.onStart();
-
-        databaseBura = FirebaseDatabase.getInstance().getReference("Buracos").child("Tampados");
-        final Query query = databaseBura.orderByChild("data_Registro").startAt(indice).limitToFirst(20);//.equalTo("Aberto", "statusBuraco");
-
-
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-
-                for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
-
-                    Buraco bura = messageSnapshot.getValue(Buraco.class);
-                    listaBuraco.add(bura);
-
-                    Log.e("BuraquimTodos", bura.getIdBuraco());
-
-                }
-
-                listenerBuraco.onRetornoLista(listaBuraco);
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
-    public void listarBuracosCriticos (OnGetFirebaseBuracosListener listener2){
+        listener.onStart();
 
         DatabaseReference databaseBura;
 
         listaBuraco = new ArrayList<Buraco>();
-        listenerBuraco = listener2;
-        listenerBuraco.onStart();
 
         databaseBura = FirebaseDatabase.getInstance().getReference("Buracos").child("Abertos");
-        final Query query = databaseBura.orderByChild("qtdOcorrencia").limitToLast(2);//.equalTo("Aberto", "statusBuraco");
+        final Query query = databaseBura.orderByChild("qtdOcorrencia").limitToLast(5);
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {
+
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
 
                 for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
 
                     Buraco bura = messageSnapshot.getValue(Buraco.class);
                     listaBuraco.add(bura);
-
-                    Log.e("BuraquimTodos", bura.getIdBuraco());
-
                 }
 
-                listenerBuraco.onRetornoLista(listaBuraco);
+                Collections.reverse(listaBuraco);
+                listener.onRetornoLista(listaBuraco);
 
             }
 
@@ -856,33 +911,6 @@ public class DaoFirebase {
             }
         });
 
-    }
-
-
-
-    //----------------------------------------------------------------------------------------
-    //                             METODOS PARA ESTATISTICAS
-    // ----------------------------------------------------------------------------------------
-
-    public int totalDeBuracos (){
-
-        int total = 0;
-
-        return total;
-    }
-
-    public int totalDeBuracosRecentes (){
-
-        int total = 0;
-
-        return total;
-    }
-
-    public int totalDeBuracosAbertosHoje (){
-
-        int total = 0;
-
-        return total;
     }
 
 
@@ -890,6 +918,7 @@ public class DaoFirebase {
     //----------------------------------------------------------------------------------------
     //                          METODOS PARA INSERCAO DE USUARIOS
     //----------------------------------------------------------------------------------------
+
 
     public void inserirUsuario (Usuario usuario){
 
@@ -936,19 +965,5 @@ public class DaoFirebase {
 
     }
 
-
-/*                  bura.setCidade((String) messageSnapshot.child("email").getValue().toString());
-                    bura.setData_Registro((String) messageSnapshot.child("id").getValue().toString());
-                    bura.setQtdReabertos((int) messageSnapshot.child("nome").getValue().toString());
-                    bura.setBairro((String) messageSnapshot.child("id").getValue().toString());
-                    bura.setLatitude((String) messageSnapshot.child("id").getValue().toString());
-                    bura.setEstado((String) messageSnapshot.child("id").getValue().toString());
-                    bura.setDataTampado((String) messageSnapshot.child("id").getValue().toString());
-                    bura.setIdBuraco((String) messageSnapshot.child("id").getValue().toString());
-                    bura.setLongitude((String) messageSnapshot.child("id").getValue().toString());
-                    bura.setQtdOcorrencia((String) messageSnapshot.child("id").getValue().toString());
-                    bura.setRua((String) messageSnapshot.child("id").getValue().toString());
-                    bura.setStatusBuraco((String) messageSnapshot.child("id").getValue().toString());
-*/
 
 }

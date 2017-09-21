@@ -17,10 +17,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.felipe.buracometro_v5.R;
-import com.example.felipe.buracometro_v5.dao.BuracoWebDao;
-import com.example.felipe.buracometro_v5.modelo.DadosEstatisticos;
+import com.example.felipe.buracometro_v5.dao.DaoFirebase;
+import com.example.felipe.buracometro_v5.listeners.OnGetFirebaseBuracosListener;
+import com.example.felipe.buracometro_v5.listeners.OnGetFirebaseDados;
+import com.example.felipe.buracometro_v5.modelo.Buraco;
+import com.example.felipe.buracometro_v5.modelo.Cidade;
+import com.example.felipe.buracometro_v5.modelo.Rua;
+import com.google.firebase.database.DatabaseError;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class TelaEstatisticas extends Fragment {
 
@@ -38,7 +46,7 @@ public class TelaEstatisticas extends Fragment {
     ImageView   imgErro5;
     ImageView   imgErro6;
 
-    ImageButton btnInfo1;
+    ImageButton   btnInfo1;
     ImageButton   btnInfo2;
     ImageButton   btnInfo3;
     ImageButton   btnInfo4;
@@ -92,7 +100,6 @@ public class TelaEstatisticas extends Fragment {
     private Handler handler6 = new Handler();
 
     View view;
-    BuracoWebDao dao = new BuracoWebDao();
     private static final String TEXTO_TOOLBAR = "Estatísticas";
 
 
@@ -100,7 +107,7 @@ public class TelaEstatisticas extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        view = inflater.inflate(R.layout.fr_tela_estatisticas,container,false);
+        view = inflater.inflate(R.layout.tela_estatisticas,container,false);
 
         ImageView imgToolbar = (ImageView) getActivity().findViewById(R.id.img_icone);
         imgToolbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.icone_estatisticas));
@@ -186,6 +193,43 @@ public class TelaEstatisticas extends Fragment {
         atualizaEstatistica4();
         atualizaEstatistica5();
         atualizaEstatistica6();
+
+        btnInfo1.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                mostrarInformacaoEstatitica1();
+            }
+        });
+
+        btnInfo3.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                mostrarInformacaoEstatitica3();
+            }
+        });
+
+        btnInfo4.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                mostrarInformacaoEstatitica4();
+            }
+        });
+
+        btnInfo6.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                mostrarInformacaoEstatitica6();
+            }
+        });
+
     }
 
 
@@ -194,87 +238,91 @@ public class TelaEstatisticas extends Fragment {
     //                     METODOS PARA ATUALIZAR CAMPOS DE ESTATISTICAS
     //----------------------------------------------------------------------------------------
 
-    ArrayList<DadosEstatisticos> listaCidadeMais = new ArrayList<DadosEstatisticos>();
+    ArrayList<Cidade> listaDasCidades = new ArrayList<Cidade>();
     int progresso;
     public void atualizaEstatistica1(){
 
-        new Thread(new Runnable() {
-            public void run() {
+        DaoFirebase dao = new DaoFirebase();
 
-                handler1.post(new Runnable() {
+        dao.buscarRegistrosDaCidade(true, new OnGetFirebaseDados() {
+
+            @Override
+            public void onStart() {
+                progressBarThread1.setVisibility(View.VISIBLE);
+                progressEstatistica1.setVisibility(View.INVISIBLE);
+                textoPorcentagem1.setVisibility(View.INVISIBLE);
+                textoInfo1.setText("Carregando...");
+                textoCidade1.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onRetornoDados(int total) {}
+
+            @Override
+            public void registrosDaCidade(int total, ArrayList<Cidade> listaCidades) {
+
+                final String cidade = listaCidades.get(0).cidade;
+
+                double y,z;
+                y = (double)listaCidades.get(0).qtd;
+                z = (double)total;
+
+                double x = (y / z) * 100;
+                final double porcentagem = Math.round(x);
+
+                Log.e("Porcentagem", "" + porcentagem);
+
+                progressBarThread1.setVisibility(View.INVISIBLE);
+                progressEstatistica1.setVisibility(View.VISIBLE);
+
+                textoInfo1.setText("Cidade mais registrada:");
+
+                textoCidade1.setVisibility(View.VISIBLE);
+                textoCidade1.setText(cidade);
+
+                btnInfo1.setVisibility(View.VISIBLE);
+
+                new Thread(new Runnable() {
                     public void run() {
-                        progressBarThread1.setVisibility(View.VISIBLE);
-                        progressEstatistica1.setVisibility(View.INVISIBLE);
 
-                        textoPorcentagem1.setVisibility(View.INVISIBLE);
-                        textoInfo1.setText("Carregando...");
-                        textoCidade1.setVisibility(View.INVISIBLE);
-                    }
-                });
+                        progresso = 0;
+                        while(progresso < porcentagem){
 
-
-                try{
-                    listaCidadeMais = dao.buscaCidadeMaisRegistrada();
-                    final String cidade = listaCidadeMais.get(0).getDados();
-
-                    //Valor da porcentagem arredondado
-                    final double porcentagem = Math.round(listaCidadeMais.get(0).getPorcertagem());
-
-                    handler1.post(new Runnable() {
-                        public void run() {
-                            progressBarThread1.setVisibility(View.INVISIBLE);
-                            progressEstatistica1.setVisibility(View.VISIBLE);
-
-                            textoInfo1.setText("Cidade mais registrada:");
-
-                            textoCidade1.setVisibility(View.VISIBLE);
-                            textoCidade1.setText(cidade);
-
-                            btnInfo1.setVisibility(View.VISIBLE);
-
-                        }
-                    });
-
-                    progresso = 0;
-                    while(progresso < porcentagem){
-
-                        try {
-                            // ---simulate doing some work---
-                            Thread.sleep(30);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
-
-                        handler1.post(new Runnable() {
-                            public void run() {
-
-                                textoPorcentagem1.setVisibility(View.VISIBLE);
-                                textoPorcentagem1.setText(progresso + "%");
-
+                            try {
+                                // ---simulate doing some work---
+                                Thread.sleep(30);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
-                        });
-
-                        progresso++;
-                        progressEstatistica1.setProgress(progresso);
-                    }
 
 
-                }catch(Exception e){
-                    e.printStackTrace();
-                    Log.d("Erro na estatistica: ", e + "");
+                            handler1.post(new Runnable() {
+                                public void run() {
 
-                    handler1.post(new Runnable() {
-                        public void run() {
-                            progressBarThread1.setVisibility(View.INVISIBLE);
-                            imgErro.setVisibility(View.VISIBLE);
-                            textoInfo1.setText("Falha de Conexão");
+                                    textoPorcentagem1.setVisibility(View.VISIBLE);
+                                    textoPorcentagem1.setText(progresso + "%");
+
+                                }
+                            });
+
+                            progresso++;
+                            progressEstatistica1.setProgress(progresso);
                         }
-                    });
-                }
+
+                    }
+                }).start();
+
+                listaDasCidades = listaCidades;
 
             }
-        }).start();
+
+            @Override
+            public void ruaComMaisRegistro(int total, ArrayList<Rua> listaRua){}
+
+            @Override
+            public void onFailed(DatabaseError databaseError) {}
+
+        });
 
     }
 
@@ -282,448 +330,429 @@ public class TelaEstatisticas extends Fragment {
     int progresso2;
     public void atualizaEstatistica2(){
 
-        new Thread(new Runnable() {
-            public void run() {
+        DaoFirebase dao = new DaoFirebase();
 
-                handler2.post(new Runnable() {
+        dao.pegarTotaldeBuracos(true, new OnGetFirebaseDados() {
+
+            @Override
+            public void onStart() {
+                progressBarThread2.setVisibility(View.VISIBLE);
+                textoInfo2.setVisibility(View.INVISIBLE);
+                textoQtdBuraco2.setVisibility(View.INVISIBLE);
+                textoInforRegistro2.setText("Carregando...");
+            }
+
+
+            @Override
+            public void onRetornoDados(int t) {
+
+                final int total = t;
+
+                progressBarThread2.setVisibility(View.INVISIBLE);
+
+                textoInfo2.setText("Total de Buracos");
+                textoInfo2.setVisibility(View.VISIBLE);
+                textoInforRegistro2.setTextSize(27);
+                textoInforRegistro2.setText("Registros");
+
+                new Thread(new Runnable() {
                     public void run() {
 
-                        progressBarThread2.setVisibility(View.VISIBLE);
+                        progresso2 = 0;
+                        while(progresso2 < total){
 
-                        textoInfo2.setVisibility(View.INVISIBLE);
-                        textoQtdBuraco2.setVisibility(View.INVISIBLE);
-                        textoInforRegistro2.setText("Carregando...");
-                    }
-                });
-
-                int qtdBuracos = dao.buscaTotalDeBuracos();
-
-                if(qtdBuracos == -1 || qtdBuracos == -2)
-                {
-
-                    handler2.post(new Runnable() {
-                        public void run() {
-                            progressBarThread2.setVisibility(View.INVISIBLE);
-                            imgErro2.setVisibility(View.VISIBLE);
-                            textoInforRegistro2.setText("Falha de Conexão");
-                        }
-                    });
-
-                }else
-                {
-                    handler2.post(new Runnable() {
-                        public void run() {
-                            progressBarThread2.setVisibility(View.INVISIBLE);
-
-                            textoInfo2.setText("Total de Buracos");
-                            textoInfo2.setVisibility(View.VISIBLE);
-                            textoInforRegistro2.setTextSize(27);
-                            textoInforRegistro2.setText("Registros");
-                            //btnInfo2.setVisibility(View.VISIBLE);
-
-                        }
-                    });
-
-                    progresso2 = 0;
-                    while(progresso2 < qtdBuracos){
-
-                        try {
-                            // ---simulate doing some work---
-                            Thread.sleep(30);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
-                        handler2.post(new Runnable() {
-                            public void run() {
-
-                                textoQtdBuraco2.setVisibility(View.VISIBLE);
-                                textoQtdBuraco2.setText(progresso2 + "");
-
+                            try {
+                                // ---simulate doing some work---
+                                Thread.sleep(30);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
-                        });
 
-                        progresso2++;
+                            handler2.post(new Runnable() {
+                                public void run() {
+
+                                    textoQtdBuraco2.setVisibility(View.VISIBLE);
+                                    textoQtdBuraco2.setText(progresso2 + "");
+
+                                }
+                            });
+
+                            progresso2++;
+                        }
                     }
-
-                }
+                }).start();
 
             }
-        }).start();
 
+            @Override
+            public void registrosDaCidade(int total, ArrayList<Cidade> listaRuas) {}
+
+            @Override
+            public void ruaComMaisRegistro(int total, ArrayList<Rua> listaRua){}
+
+            @Override
+            public void onFailed(DatabaseError databaseError) {}
+
+        });
     }
 
 
-    ArrayList<DadosEstatisticos> listaCidadeMenos = new ArrayList<DadosEstatisticos>();
+    ArrayList<Cidade> listaCidadeMenos = new ArrayList<Cidade>();
     int progresso3;
     public void atualizaEstatistica3(){
 
-        new Thread(new Runnable() {
-            public void run() {
+        DaoFirebase dao = new DaoFirebase();
 
-                handler3.post(new Runnable() {
+        dao.buscarRegistrosDaCidade(false, new OnGetFirebaseDados() {
+
+            @Override
+            public void onStart() {
+
+                progressBarThread3.setVisibility(View.VISIBLE);
+                progressEstatistica3.setVisibility(View.INVISIBLE);
+                textoPorcentagem3.setVisibility(View.INVISIBLE);
+                textoInfo3.setText("Carregando...");
+                textoCidade4.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onRetornoDados(int total) {}
+
+            @Override
+            public void registrosDaCidade(int total, ArrayList<Cidade> listaCidades) {
+
+                final String cidade = listaCidades.get(0).cidade;
+
+                double y,z;
+                y = (double)listaCidades.get(0).qtd;
+                z = (double)total;
+
+                double x = (y / z) * 100;
+                final double porcentagem = Math.round(x);
+
+                Log.e("Porcentagem", "" + porcentagem);
+
+                progressBarThread3.setVisibility(View.INVISIBLE);
+                progressEstatistica3.setVisibility(View.VISIBLE);
+                textoInfo3.setText("Cidade menos registrada:");
+                textoCidade4.setText(cidade);
+                textoCidade4.setVisibility(View.VISIBLE);
+                btnInfo3.setVisibility(View.VISIBLE);
+
+                new Thread(new Runnable() {
                     public void run() {
 
-                        progressBarThread3.setVisibility(View.VISIBLE);
+                        progresso3 = 0;
+                        while(progresso3 < porcentagem){
 
-                        progressEstatistica3.setVisibility(View.INVISIBLE);
-                        textoPorcentagem3.setVisibility(View.INVISIBLE);
-                        textoInfo3.setText("Carregando...");
-                        textoCidade4.setVisibility(View.INVISIBLE);
-                    }
-                });
-
-                try{
-
-                    listaCidadeMenos = dao.buscaCidadeMenosRegistrada();
-
-                    //de.setDados("São Paulo");
-                    //de.setPorcertagem(71.7);
-                    //de.setQtdDados(56);
-
-                    final String cidade = listaCidadeMenos.get(0).getDados();
-
-                    //Valor da porcentagem arredondado
-                    final double porcentagem = Math.round(listaCidadeMenos.get(0).getPorcertagem());
-
-                    handler3.post(new Runnable() {
-                        public void run() {
-                            progressBarThread3.setVisibility(View.INVISIBLE);
-                            progressEstatistica3.setVisibility(View.VISIBLE);
-
-                            textoInfo3.setText("Cidade menos registrada:");
-
-                            textoCidade4.setText(cidade);
-                            textoCidade4.setVisibility(View.VISIBLE);
-                            btnInfo3.setVisibility(View.VISIBLE);
-
-
-                        }
-                    });
-
-                    progresso3 = 0;
-                    while(progresso3 < porcentagem){
-
-                        try {
-                            // ---simulate doing some work---
-                            Thread.sleep(30);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
-                        handler3.post(new Runnable() {
-                            public void run() {
-
-                                textoPorcentagem3.setVisibility(View.VISIBLE);
-                                textoPorcentagem3.setText(progresso3 + "%");
-
+                            try {
+                                // ---simulate doing some work---
+                                Thread.sleep(30);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
-                        });
 
-                        progresso3++;
-                        progressEstatistica3.setProgress(progresso3);
-                    }
+                            handler3.post(new Runnable() {
+                                public void run() {
 
+                                    textoPorcentagem3.setVisibility(View.VISIBLE);
+                                    textoPorcentagem3.setText(progresso3 + "%");
 
-                }catch(Exception e){
-                    e.printStackTrace();
-                    Log.d("Erro na estatistica: ", e + "");
+                                }
+                            });
 
-                    handler3.post(new Runnable() {
-                        public void run() {
-                            progressBarThread3.setVisibility(View.INVISIBLE);
-                            imgErro3.setVisibility(View.VISIBLE);
-                            textoInfo3.setText("Falha de Conexão");
+                            progresso3++;
+                            progressEstatistica3.setProgress(progresso3);
                         }
-                    });
-                }
+
+                    }
+                }).start();
+
+                listaCidadeMenos = listaCidades;
 
             }
-        }).start();
 
+            @Override
+            public void ruaComMaisRegistro(int total, ArrayList<Rua> listaRua){}
+
+            @Override
+            public void onFailed(DatabaseError databaseError) {
+            }
+
+        });
     }
 
 
-    ArrayList<DadosEstatisticos> listaRuaMais = new ArrayList<DadosEstatisticos>();
+    ArrayList<Rua> listaDeRuas = new ArrayList<Rua>();
     int progresso4;
     public void atualizaEstatistica4(){
 
-        new Thread(new Runnable() {
-            public void run() {
+        DaoFirebase dao = new DaoFirebase();
 
-                handler4.post(new Runnable() {
+        dao.ruaComMaisBuracos(new OnGetFirebaseDados() {
+
+            @Override
+            public void onStart() {
+
+                textoInfo4.setVisibility(View.INVISIBLE);
+                textoInfoContinua4.setVisibility(View.INVISIBLE);
+                textoEndereco4.setVisibility(View.INVISIBLE);
+                TextoQtdBuraco4.setVisibility(View.INVISIBLE);
+                textoInforRegistro4.setTextSize(20);
+                textoInforRegistro4.setText("Carregando...");
+                textoInforRegistro4.setVisibility(View.VISIBLE);
+                progressBarThread4.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onRetornoDados(int t) {}
+
+            @Override
+            public void registrosDaCidade(int total, ArrayList<Cidade> listaRuas) {}
+
+            @Override
+            public void ruaComMaisRegistro(int total, ArrayList<Rua> listaRua){
+
+                final String dadosEndereco = listaRua.get(0).rua;
+                final int qtdBuracos = listaRua.get(0).qtd;
+
+                progressBarThread4.setVisibility(View.INVISIBLE);
+                textoInfo4.setVisibility(View.VISIBLE);
+                textoInfoContinua4.setVisibility(View.VISIBLE);
+                textoEndereco4.setText(dadosEndereco);
+                textoEndereco4.setVisibility(View.VISIBLE);
+                textoInforRegistro4.setTextSize(27);
+                textoInforRegistro4.setText("registros");
+                textoInforRegistro4.setVisibility(View.VISIBLE);
+                btnInfo4.setVisibility(View.VISIBLE);
+
+                new Thread(new Runnable() {
                     public void run() {
 
-                        textoInfo4.setVisibility(View.INVISIBLE);
-                        textoInfoContinua4.setVisibility(View.INVISIBLE);
-                        textoEndereco4.setVisibility(View.INVISIBLE);
-                        TextoQtdBuraco4.setVisibility(View.INVISIBLE);
+                        progresso4 = 0;
+                        while(progresso4 < qtdBuracos){
 
-                        textoInforRegistro4.setTextSize(20);
-                        textoInforRegistro4.setText("Carregando...");
-                        textoInforRegistro4.setVisibility(View.VISIBLE);
-
-                        progressBarThread4.setVisibility(View.VISIBLE);
-                    }
-                });
-
-
-                try{
-
-                    listaRuaMais = dao.buscaRuaMaisEsburacada();
-
-                    final String dadosEndereco = listaRuaMais.get(0).getDados();
-                    final int qtdBuracos = listaRuaMais.get(0).getQtdDados();
-
-
-                    handler4.post(new Runnable() {
-                        public void run() {
-
-                            progressBarThread4.setVisibility(View.INVISIBLE);
-
-                            textoInfo4.setVisibility(View.VISIBLE);
-                            textoInfoContinua4.setVisibility(View.VISIBLE);
-
-                            textoEndereco4.setText(dadosEndereco);
-                            textoEndereco4.setVisibility(View.VISIBLE);
-
-                            textoInforRegistro4.setTextSize(27);
-                            textoInforRegistro4.setText("registros");
-                            textoInforRegistro4.setVisibility(View.VISIBLE);
-
-                            btnInfo4.setVisibility(View.VISIBLE);
-
-
-                        }
-                    });
-
-                    progresso4 = 0;
-                    while(progresso4 < qtdBuracos){
-
-                        try {
-                            // ---simulate doing some work---
-                            Thread.sleep(30);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
-                        handler4.post(new Runnable() {
-                            public void run() {
-
-                                TextoQtdBuraco4.setVisibility(View.VISIBLE);
-                                TextoQtdBuraco4.setText(progresso4 + "");
-
+                            try {
+                                // ---simulate doing some work---
+                                Thread.sleep(30);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
-                        });
+                            handler4.post(new Runnable() {
+                                public void run() {
 
-                        progresso4++;
-                    }
+                                    TextoQtdBuraco4.setVisibility(View.VISIBLE);
+                                    TextoQtdBuraco4.setText(progresso4 + "");
+                                }
+                            });
 
-                }catch(Exception e){
-                    e.printStackTrace();
-                    Log.d("Erro na estatistica: ", e + "");
-
-                    handler4.post(new Runnable() {
-                        public void run() {
-                            progressBarThread4.setVisibility(View.INVISIBLE);
-                            imgErro4.setVisibility(View.VISIBLE);
-                            textoInforRegistro4.setTextSize(20);
-                            textoInforRegistro4.setGravity(View.TEXT_ALIGNMENT_CENTER);
-                            textoInforRegistro4.setText("Falha de Conexão");
+                            progresso4++;
                         }
-                    });
-                }
 
+                    }
+                }).start();
+                listaDeRuas = listaRua;
             }
-        }).start();
+
+            @Override
+            public void onFailed(DatabaseError databaseError) {}
+
+        });
+
     }
 
 
     int progresso5;
     public void atualizaEstatistica5(){
 
-        new Thread(new Runnable() {
-            public void run() {
+        DaoFirebase dao = new DaoFirebase();
 
-                handler5.post(new Runnable() {
+        dao.pegarTotaldeBuracos(false, new OnGetFirebaseDados() {
+
+            @Override
+            public void onStart() {
+
+                progressBarThread5.setVisibility(View.VISIBLE);
+                textoInfo5.setVisibility(View.INVISIBLE);
+                textoBuracoTampados5.setVisibility(View.INVISIBLE);
+                textoInforRegistro5.setText("Carregando...");
+            }
+
+            @Override
+            public void onRetornoDados(int t) {
+
+                final int total = t;
+
+                progressBarThread5.setVisibility(View.INVISIBLE);
+                textoInfo5.setText("Buracos Tampados");
+                textoInfo5.setVisibility(View.VISIBLE);
+                textoInforRegistro5.setTextSize(27);
+                textoInforRegistro5.setText("Registros");
+
+                new Thread(new Runnable() {
                     public void run() {
 
-                        progressBarThread5.setVisibility(View.VISIBLE);
+                        progresso5 = 0;
+                        while(progresso5 < total){
 
-                        textoInfo5.setVisibility(View.INVISIBLE);
-                        textoBuracoTampados5.setVisibility(View.INVISIBLE);
-                        textoInforRegistro5.setText("Carregando...");
-                    }
-                });
-
-                int qtdBuracos = dao.buscaTotalDeBuracosTampados();
-
-                if(qtdBuracos == -1 || qtdBuracos == -2)
-                {
-
-                    handler5.post(new Runnable() {
-                        public void run() {
-                            progressBarThread5.setVisibility(View.INVISIBLE);
-                            imgErro5.setVisibility(View.VISIBLE);
-                            textoInforRegistro5.setText("Falha de Conexão");
-                        }
-                    });
-
-                }else
-                {
-                    handler5.post(new Runnable() {
-                        public void run() {
-                            progressBarThread5.setVisibility(View.INVISIBLE);
-
-                            textoInfo5.setText("Buracos Tampados");
-                            textoInfo5.setVisibility(View.VISIBLE);
-                            textoInforRegistro5.setTextSize(27);
-                            textoInforRegistro5.setText("Registros");
-                            //btnInfo2.setVisibility(View.VISIBLE);
-
-                        }
-                    });
-
-                    progresso5 = 0;
-                    while(progresso5 < qtdBuracos){
-
-                        try {
-                            // ---simulate doing some work---
-                            Thread.sleep(30);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
-                        handler5.post(new Runnable() {
-                            public void run() {
-
-                                textoBuracoTampados5.setVisibility(View.VISIBLE);
-                                textoBuracoTampados5.setText(progresso5 + "");
-
+                            try {
+                                // ---simulate doing some work---
+                                Thread.sleep(30);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
-                        });
 
-                        progresso5++;
+                            handler5.post(new Runnable() {
+                                public void run() {
+
+                                    textoBuracoTampados5.setVisibility(View.VISIBLE);
+                                    textoBuracoTampados5.setText(progresso5 + "");
+
+                                }
+                            });
+
+                            progresso5++;
+                        }
+
                     }
 
-                }
+                }).start();
 
             }
-        }).start();
+
+            @Override
+            public void registrosDaCidade(int total, ArrayList<Cidade> listaRuas) {}
+
+            @Override
+            public void ruaComMaisRegistro(int total, ArrayList<Rua> listaRua){}
+
+            @Override
+            public void onFailed(DatabaseError databaseError) {}
+
+        });
 
     }
 
 
-    ArrayList<DadosEstatisticos> listaMaisAntigos = new ArrayList<DadosEstatisticos>();
+    ArrayList<Buraco> listaBuracosAntigos = new ArrayList<Buraco>();
     int progresso6;
     public void atualizaEstatistica6(){
 
-        new Thread(new Runnable() {
-            public void run() {
+        DaoFirebase dao = new DaoFirebase();
 
-                handler6.post(new Runnable() {
+        dao.listarBuracosMaisAntigos(new OnGetFirebaseBuracosListener() {
+            @Override
+
+            public void onStart() {
+
+                textoInfo6.setVisibility(View.INVISIBLE);
+                textoInfoContinua6.setVisibility(View.INVISIBLE);
+                textoEndereco6.setVisibility(View.INVISIBLE);
+                textoInforDesde6.setVisibility(View.INVISIBLE);
+                textoData6.setVisibility(View.INVISIBLE);
+                textoQtdDias6.setVisibility(View.INVISIBLE);
+                textoInfoDias6.setVisibility(View.INVISIBLE);
+                textoInforRegistro6.setTextSize(20);
+                textoInforRegistro6.setText("Carregando...");
+                textoInforRegistro6.setVisibility(View.VISIBLE);
+                progressBarThread6.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onRetornoLista(ArrayList<Buraco> listaRetornada){
+
+                final String dadosEndereco  = listaRetornada.get(0).getRua();
+
+                long dataAtual = System.currentTimeMillis()/1000;
+                long dataPassado = Long.parseLong(listaRetornada.get(0).getData_Registro());
+
+                long diferenca = (dataAtual - dataPassado)/ 60 / 60 / 24;
+
+                Log.e("dataAtual", ""+ dataAtual);
+                Log.e("dataPassado", ""+ dataPassado);
+                Log.e("diferenca", ""+ diferenca);
+
+                long timestamp = Long.parseLong(listaRetornada.get(0).getData_Registro()) * 1000L;
+                String data;
+                DateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+                Date netDate = (new Date(timestamp));
+                data =  sdf.format(netDate);
+
+                final String dataAntiga  = data;
+                final int qtdBuracos     = ((int) diferenca) + 1;
+
+                textoInforRegistro6 = (TextView) view.findViewById(R.id.textoInfo6);
+                textoInfo6          = (TextView) view.findViewById(R.id.textoBuracoComMais6);
+                textoInfoContinua6  = (TextView) view.findViewById(R.id.textoTempoAberto6);
+                textoEndereco6      = (TextView) view.findViewById(R.id.textoRuaMaiorTempo6);
+                textoInforDesde6    = (TextView) view.findViewById(R.id.textoDesde6);
+                textoData6          = (TextView) view.findViewById(R.id.textoData6);
+                textoQtdDias6       = (TextView) view.findViewById(R.id.textoDias6);
+                textoInfoDias6      = (TextView) view.findViewById(R.id.textoInfoDias6);
+
+
+                progressBarThread6.setVisibility(View.INVISIBLE);
+                textoInforRegistro6.setVisibility(View.INVISIBLE);
+
+                textoInfo6.setVisibility(View.VISIBLE);
+                textoInfoContinua6.setVisibility(View.VISIBLE);
+
+                textoEndereco6.setText(dadosEndereco);
+                textoEndereco6.setVisibility(View.VISIBLE);
+
+                textoInforDesde6.setVisibility(View.VISIBLE);
+                textoData6.setText(dataAntiga);
+                textoData6.setVisibility(View.VISIBLE);
+
+                textoInfoDias6.setVisibility(View.VISIBLE);
+
+                btnInfo6.setVisibility(View.VISIBLE);
+
+                new Thread(new Runnable() {
                     public void run() {
 
-                        textoInfo6.setVisibility(View.INVISIBLE);
-                        textoInfoContinua6.setVisibility(View.INVISIBLE);
-                        textoEndereco6.setVisibility(View.INVISIBLE);
-                        textoInforDesde6.setVisibility(View.INVISIBLE);
-                        textoData6.setVisibility(View.INVISIBLE);
-                        textoQtdDias6.setVisibility(View.INVISIBLE);
-                        textoInfoDias6.setVisibility(View.INVISIBLE);
+                        progresso6 = 0;
+                        while(progresso6 < qtdBuracos){
 
-                        textoInforRegistro6.setTextSize(20);
-                        textoInforRegistro6.setText("Carregando...");
-                        textoInforRegistro6.setVisibility(View.VISIBLE);
-
-                        progressBarThread6.setVisibility(View.VISIBLE);
-                    }
-                });
-
-
-                try{
-
-                    listaMaisAntigos = dao.buscaBuracoMaisAntigo();
-
-                    final String dadosEndereco  = listaMaisAntigos.get(0).getDados();
-                    final String dataAntiga     = listaMaisAntigos.get(0).getDados2();
-                    final int qtdBuracos        = listaMaisAntigos.get(0).getQtdDados();
-
-
-                    handler6.post(new Runnable() {
-                        public void run() {
-
-
-                            textoInforRegistro6 = (TextView) view.findViewById(R.id.textoInfo6);
-                            textoInfo6          = (TextView) view.findViewById(R.id.textoBuracoComMais6);
-                            textoInfoContinua6  = (TextView) view.findViewById(R.id.textoTempoAberto6);
-                            textoEndereco6      = (TextView) view.findViewById(R.id.textoRuaMaiorTempo6);
-                            textoInforDesde6    = (TextView) view.findViewById(R.id.textoDesde6);
-                            textoData6          = (TextView) view.findViewById(R.id.textoData6);
-                            textoQtdDias6       = (TextView) view.findViewById(R.id.textoDias6);
-                            textoInfoDias6      = (TextView) view.findViewById(R.id.textoInfoDias6);
-
-
-                            progressBarThread6.setVisibility(View.INVISIBLE);
-                            textoInforRegistro6.setVisibility(View.INVISIBLE);
-
-                            textoInfo6.setVisibility(View.VISIBLE);
-                            textoInfoContinua6.setVisibility(View.VISIBLE);
-
-                            textoEndereco6.setText(dadosEndereco);
-                            textoEndereco6.setVisibility(View.VISIBLE);
-
-                            textoInforDesde6.setVisibility(View.VISIBLE);
-                            textoData6.setText(dataAntiga);
-                            textoData6.setVisibility(View.VISIBLE);
-
-                            textoInfoDias6.setVisibility(View.VISIBLE);
-
-                            btnInfo6.setVisibility(View.VISIBLE);
-
-
-                        }
-                    });
-
-                    progresso6 = 0;
-                    while(progresso6 < qtdBuracos){
-
-                        try {
-                            // ---simulate doing some work---
-                            Thread.sleep(30);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
-                        handler6.post(new Runnable() {
-                            public void run() {
-
-                                textoQtdDias6.setVisibility(View.VISIBLE);
-                                textoQtdDias6.setText(progresso6 + "");
-
+                            try {
+                                // ---simulate doing some work---
+                                Thread.sleep(30);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
-                        });
 
-                        progresso6++;
-                    }
+                            handler6.post(new Runnable() {
+                                public void run() {
 
-                }catch(Exception e){
-                    e.printStackTrace();
-                    Log.d("Erro na estatistica: ", e + "");
+                                    textoQtdDias6.setVisibility(View.VISIBLE);
+                                    textoQtdDias6.setText(progresso6 + "");
 
-                    handler6.post(new Runnable() {
-                        public void run() {
-                            progressBarThread6.setVisibility(View.INVISIBLE);
-                            imgErro6.setVisibility(View.VISIBLE);
-                            textoInforRegistro6.setTextSize(20);
-                            textoInforRegistro6.setGravity(View.TEXT_ALIGNMENT_CENTER);
-                            textoInforRegistro6.setText("Falha de Conexão");
+                                }
+                            });
+
+                            progresso6++;
                         }
-                    });
-                }
+                    }
+                }).start();
+
+                listaBuracosAntigos = listaRetornada;
 
             }
-        }).start();
+
+            @Override
+            public void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados){}
+
+            @Override
+            public void onFailed(DatabaseError databaseError) {}
+
+            @Override
+            public void onRetornoExiste(Boolean existe){}
+
+            @Override
+            public void onRetornoBuraco(Buraco buraco) {}
+
+        });
+
     }
 
 
@@ -739,24 +768,14 @@ public class TelaEstatisticas extends Fragment {
 
         mensagemSobre.setTitle("Cidades mais registradas");
 
-        String mensagem = (
-                "1ª - " + listaCidadeMais.get(0).getDados() + " - " +  listaCidadeMais.get(0).getDados2()
-                        + "\n       Registros: " + listaCidadeMais.get(0).getQtdDados() + "\n" +
+        String msg = "";
+        for (int i = 1; i<=listaDasCidades.size();i++){
 
-                        "2ª - " + listaCidadeMais.get(1).getDados() + " - " +  listaCidadeMais.get(1).getDados2()
-                        + "\n       Registros: " + listaCidadeMais.get(1).getQtdDados() + "\n" +
+            msg = msg + "\n" + i + "ª - " + listaDasCidades.get(i-1).cidade + " - " +  listaDasCidades.get(i-1).estado + "\n       Registros: " + listaDasCidades.get(i-1).qtd + "\n";
 
-                        "3ª - " + listaCidadeMais.get(2).getDados() + " - " +  listaCidadeMais.get(2).getDados2()
-                        + "\n       Registros: " + listaCidadeMais.get(2).getQtdDados() + "\n" +
+        }
 
-                        "4ª - " + listaCidadeMais.get(3).getDados() + " - " +  listaCidadeMais.get(3).getDados2()
-                        + "\n       Registros: " + listaCidadeMais.get(3).getQtdDados() + "\n" +
-
-                        "5ª - " + listaCidadeMais.get(4).getDados() + " - " +  listaCidadeMais.get(4).getDados2()
-                        + "\n       Registros: " + listaCidadeMais.get(4).getQtdDados());
-
-
-        mensagemSobre.setMessage(mensagem);
+        mensagemSobre.setMessage(msg);
 
         mensagemSobre.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
@@ -777,24 +796,14 @@ public class TelaEstatisticas extends Fragment {
 
         mensagemSobre.setTitle("Cidades menos registradas");
 
-        String mensagem = (
-                "1ª - " + listaCidadeMenos.get(0).getDados() + " - " +  listaCidadeMenos.get(0).getDados2()
-                        + "\n       Registros: " + listaCidadeMenos.get(0).getQtdDados() + "\n" +
+        String msg = "";
+        for (int i = 1; i<=listaCidadeMenos.size();i++){
 
-                        "2ª - " + listaCidadeMenos.get(1).getDados() + " - " +  listaCidadeMenos.get(1).getDados2()
-                        + "\n       Registros: " + listaCidadeMenos.get(1).getQtdDados() + "\n" +
+            msg = msg + "\n" + i + "ª - " + listaCidadeMenos.get(i-1).cidade + " - " +  listaCidadeMenos.get(i-1).estado + "\n       Registros: " + listaCidadeMenos.get(i-1).qtd + "\n";
 
-                        "3ª - " + listaCidadeMenos.get(2).getDados() + " - " +  listaCidadeMenos.get(2).getDados2()
-                        + "\n       Registros: " + listaCidadeMenos.get(2).getQtdDados() + "\n" +
+        }
 
-                        "4ª - " + listaCidadeMenos.get(3).getDados() + " - " +  listaCidadeMenos.get(3).getDados2()
-                        + "\n       Registros: " + listaCidadeMenos.get(3).getQtdDados() + "\n" +
-
-                        "5ª - " + listaCidadeMenos.get(4).getDados() + " - " +  listaCidadeMenos.get(4).getDados2()
-                        + "\n       Registros: " + listaCidadeMenos.get(4).getQtdDados());
-
-
-        mensagemSobre.setMessage(mensagem);
+        mensagemSobre.setMessage(msg);
 
         mensagemSobre.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
@@ -804,7 +813,6 @@ public class TelaEstatisticas extends Fragment {
         });
 
         infoEstatistica = mensagemSobre.create();
-        infoEstatistica.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
         infoEstatistica.show();
 
     }
@@ -814,31 +822,16 @@ public class TelaEstatisticas extends Fragment {
 
         AlertDialog infoEstatistica;
         AlertDialog.Builder mensagemSobre = new AlertDialog.Builder(getContext());
-
         mensagemSobre.setTitle("Endereços com mais buracos");
 
-        String mensagem = (
-                "1ª - " + listaRuaMais.get(0).getDados()
-                        + "\n       " + listaRuaMais.get(0).getDados2() + " - " +  listaRuaMais.get(0).getDados3()
-                        + "\n       Registro: " + listaRuaMais.get(0).getQtdDados() + "\n" +
+        String msg = "";
+        for (int i = 1; i<=listaDeRuas.size();i++){
 
-                        "2ª - " + listaRuaMais.get(1).getDados()
-                        + "\n       " + listaRuaMais.get(1).getDados2() + " - " +  listaRuaMais.get(1).getDados3()
-                        + "\n       Registro: " + listaRuaMais.get(1).getQtdDados() + "\n" +
+            msg = msg + "\n" + i + "ª - " + listaDeRuas.get(i-1).rua + "\n       " +  listaDeRuas.get(i-1).cidade + " - " + listaDeRuas.get(i-1).estado + "\n       Buracos: " + listaDeRuas.get(i-1).qtd + "\n";
 
-                        "3ª - " + listaRuaMais.get(2).getDados()
-                        + "\n       " + listaRuaMais.get(2).getDados2() + " - " +  listaRuaMais.get(2).getDados3()
-                        + "\n       Registro: " + listaRuaMais.get(2).getQtdDados() + "\n" +
+        }
 
-                        "4ª - " + listaRuaMais.get(3).getDados()
-                        + "\n       " + listaRuaMais.get(3).getDados2() + " - " +  listaRuaMais.get(3).getDados3()
-                        + "\n       Registro: " + listaRuaMais.get(3).getQtdDados() + "\n" +
-
-                        "5ª - " + listaRuaMais.get(4).getDados()
-                        + "\n       " + listaRuaMais.get(4).getDados2() + " - " +  listaRuaMais.get(4).getDados3()
-                        + "\n       Registro: " + listaRuaMais.get(4).getQtdDados());
-
-        mensagemSobre.setMessage(mensagem);
+        mensagemSobre.setMessage(msg);
 
         mensagemSobre.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
@@ -848,40 +841,38 @@ public class TelaEstatisticas extends Fragment {
         });
 
         infoEstatistica = mensagemSobre.create();
-        infoEstatistica.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
         infoEstatistica.show();
 
     }
 
     public void mostrarInformacaoEstatitica6(){
-/*
+
         AlertDialog infoEstatistica;
-        AlertDialog.Builder mensagemSobre = new AlertDialog.Builder(this);
+        AlertDialog.Builder mensagemSobre = new AlertDialog.Builder(getContext());
 
         mensagemSobre.setTitle("Buracos com mais tempo abertos");
 
-        String mensagem = (
-                        "1ª - " + listaMaisAntigos.get(0).getDados()
-                        + "\n       " + listaMaisAntigos.get(0).getDados3() + " - " +  listaMaisAntigos.get(0).getDados4()
-                        + "\n       Desde: " + listaMaisAntigos.get(0).getDados2() + " " + listaMaisAntigos.get(0).getQtdDados() + " dias" + "\n" +
+        String msg = "";
+        for (int i = 1; i<=listaBuracosAntigos.size();i++){
 
-                        "2ª - " + listaMaisAntigos.get(1).getDados()
-                        + "\n       " + listaMaisAntigos.get(1).getDados3() + " - " +  listaMaisAntigos.get(1).getDados4()
-                        + "\n       Desde: " + listaMaisAntigos.get(1).getDados2() + " " + listaMaisAntigos.get(1).getQtdDados() + " dias" + "\n" +
+            long dataAtual = System.currentTimeMillis()/1000;
+            long dataPassado = Long.parseLong(listaBuracosAntigos.get(i-1).getData_Registro());
 
-                        "3ª - " + listaMaisAntigos.get(2).getDados()
-                        + "\n       " + listaMaisAntigos.get(2).getDados3() + " - " +  listaMaisAntigos.get(2).getDados4()
-                        + "\n       Desde: " + listaMaisAntigos.get(2).getDados2() + " " + listaMaisAntigos.get(2).getQtdDados() + " dias" + "\n" +
+            long diferenca = (dataAtual - dataPassado)/ 60 / 60 / 24;
 
-                        "4ª - " + listaMaisAntigos.get(3).getDados()
-                        + "\n       " + listaMaisAntigos.get(3).getDados3() + " - " +  listaMaisAntigos.get(3).getDados4()
-                        + "\n       Desde: " + listaMaisAntigos.get(3).getDados2() + " " + listaMaisAntigos.get(3).getQtdDados() + " dias" + "\n" +
+            long timestamp = Long.parseLong(listaBuracosAntigos.get(i-1).getData_Registro()) * 1000L;
+            String data;
+            DateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            Date netDate = (new Date(timestamp));
+            data =  sdf.format(netDate);
 
-                        "5ª - " + listaMaisAntigos.get(4).getDados()
-                        + "\n       " + listaMaisAntigos.get(4).getDados3() + " - " +  listaMaisAntigos.get(4).getDados4()
-                        + "\n       Desde: " + listaMaisAntigos.get(4).getDados2() + " " + listaMaisAntigos.get(4).getQtdDados() + " dias");
+            final int qtdBuracos = ((int) diferenca) + 1;
 
-        mensagemSobre.setMessage(mensagem);
+            msg = msg + "\n" + i + "ª - " + listaBuracosAntigos.get(i-1).getRua() + "\n       " +  listaBuracosAntigos.get(i-1).getCidade() + " - " + listaBuracosAntigos.get(i-1).getEstado() + "\n       Desde: " + data + " - " + qtdBuracos + " dias\n";
+
+        }
+
+        mensagemSobre.setMessage(msg);
 
         mensagemSobre.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
@@ -894,7 +885,7 @@ public class TelaEstatisticas extends Fragment {
         infoEstatistica.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
         infoEstatistica.show();
 
-*/
+
     }
 
 

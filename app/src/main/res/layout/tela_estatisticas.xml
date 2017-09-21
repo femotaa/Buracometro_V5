@@ -36,7 +36,6 @@
                 android:layout_alignBottom="@+id/img_back1"
                 android:layout_alignRight="@+id/img_back1"
                 android:layout_alignEnd="@+id/img_back1"
-                android:onClick="mostrarInformacaoEstatitica1"
                 android:visibility="invisible"
                 android:contentDescription="@string/app_name"/>
 
@@ -143,7 +142,6 @@
                 android:layout_alignBottom="@+id/img_back2"
                 android:layout_alignRight="@+id/img_back2"
                 android:layout_alignEnd="@+id/img_back2"
-                android:onClick="mostrarInformacaoEstatitica2"
                 android:visibility="invisible"
                 android:contentDescription="@string/app_name"/>
 
@@ -236,7 +234,6 @@
                 android:layout_alignBottom="@+id/img_back3"
                 android:layout_alignRight="@+id/img_back3"
                 android:layout_alignEnd="@+id/img_back3"
-                android:onClick="mostrarInformacaoEstatitica3"
                 android:visibility="invisible"
                 android:contentDescription="@string/app_name"/>
 
@@ -344,7 +341,6 @@
                 android:layout_alignBottom="@+id/img_back4"
                 android:layout_alignRight="@+id/img_back4"
                 android:layout_alignEnd="@+id/img_back4"
-                android:onClick="mostrarInformacaoEstatitica4"
                 android:visibility="invisible"
                 android:contentDescription="@string/app_name"/>
 
@@ -473,7 +469,6 @@
                 android:layout_alignBottom="@+id/img_back5"
                 android:layout_alignRight="@+id/img_back5"
                 android:layout_alignEnd="@+id/img_back5"
-                android:onClick="mostrarInformacaoEstatitica5"
                 android:visibility="invisible"
                 android:contentDescription="@string/app_name"/>
 
@@ -565,7 +560,6 @@
                 android:layout_alignBottom="@+id/img_back6"
                 android:layout_alignRight="@+id/img_back6"
                 android:layout_alignEnd="@+id/img_back6"
-                android:onClick="mostrarInformacaoEstatitica6"
                 android:visibility="invisible"
                 android:contentDescription="@string/app_name"/>
 

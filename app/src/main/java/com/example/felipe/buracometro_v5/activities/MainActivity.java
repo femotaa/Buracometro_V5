@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
@@ -24,7 +25,10 @@ import com.example.felipe.buracometro_v5.fragments.TelaMapa;
 import com.example.felipe.buracometro_v5.fragments.TelaMenu;
 import com.example.felipe.buracometro_v5.fragments.TelaNotificaBuraco;
 import com.example.felipe.buracometro_v5.fragments.TelaRegistros;
+import com.example.felipe.buracometro_v5.modelo.Buraco;
 import com.google.android.gms.maps.MapView;
+
+import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -108,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (id == R.id.action_settings)
         {
-            return true;
+            mudarTelaConfiguracoes(null);
         }
 
         if(id == R.id.action_deslogar){
@@ -150,6 +154,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         }
 
+        if (id == R.id.action_mapear)
+        {
+            TelaRegistros tr = new TelaRegistros();
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -166,28 +175,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     {
 
         int id = item.getItemId();
+        Fragment f = getSupportFragmentManager().findFragmentById(R.id.bau_de_fragments);
 
-        if (id == R.id.inicio) {
+        if (id == R.id.inicio && !(f instanceof TelaMenu)) {
 
             mudarTelaInicio(null);
 
-        } else if (id == R.id.registrados) {
+        } else if (id == R.id.registrados && !(f instanceof TelaRegistros)) {
 
             mudarTelaRegistrados(null);
 
-        } else if (id == R.id.mapas) {
+        } else if (id == R.id.mapas && !(f instanceof TelaMapa)) {
 
             mudarTelaMapas(null);
 
-        } else if (id == R.id.estatisticas) {
+        } else if (id == R.id.estatisticas && !(f instanceof TelaEstatisticas)) {
 
             mudarTelaEstatisticas(null);
 
-        } else if (id == R.id.notifica_buraco) {
+        } else if (id == R.id.notifica_buraco && !(f instanceof TelaNotificaBuraco)) {
 
             mudarTelaNotificaBuraco(null);
 
-        } else if (id == R.id.configuracoes) {
+        } else if (id == R.id.configuracoes && !(f instanceof TelaConfiguracoes)) {
 
             mudarTelaConfiguracoes(null);
 
@@ -234,6 +244,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void mudarTelaMapas (View view){
 
+        /**/
         FragmentManager fr = getSupportFragmentManager();
         TelaMapa objetoDaTela = new TelaMapa();
         FragmentTransaction fragmentTransaction = fr.beginTransaction();
@@ -241,7 +252,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         fragmentTransaction.addToBackStack("TelaMapa");
         fragmentTransaction.commit();
+        /**/
+
     }
+
+
+    public void mudarTelaMapasComRegistros(ArrayList<Buraco> listaRegistros, ArrayList<Buraco> listaRecentes, ArrayList<Buraco> listaCriticos ){
+
+        /** /
+        FragmentManager fr = getSupportFragmentManager();
+        TelaMapa objetoDaTela = new TelaMapa();
+        FragmentTransaction fragmentTransaction = fr.beginTransaction();
+        fragmentTransaction.replace(R.id.bau_de_fragments,objetoDaTela,"TelaMapa");
+
+        fragmentTransaction.addToBackStack("TelaMapa");
+        fragmentTransaction.commit();
+
+        TelaMapa fragment = new TelaMapa();
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList("listaRegistros", listaRegistros);
+        bundle.putParcelableArrayList("listaRecentes", listaRecentes);
+        bundle.putParcelableArrayList("listaCriticos", listaCriticos);
+
+        fragment.setArguments(bundle);
+        getFragmentManager().beginTransaction().replace(R.id.bau_de_fragments, fragment).commit();
+        /* */
+    }
+
 
     public void mudarTelaEstatisticas (View view){
 

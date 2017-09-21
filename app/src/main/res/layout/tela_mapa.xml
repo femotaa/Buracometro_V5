@@ -2,6 +2,21 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:id="@+id/progressBar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:visibility="visible"/>
+
+    </RelativeLayout>
+
     <TabHost
         android:id="@+id/tabhostmapa"
         android:layout_width="match_parent"
@@ -12,18 +27,17 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+
             <TabWidget
                 android:id="@android:id/tabs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <fragment
+            <com.google.android.gms.maps.MapView
                 android:id="@+id/map"
+                android:visibility="invisible"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                class="com.google.android.gms.maps.SupportMapFragment">
-
-            </fragment>
+                android:layout_height="match_parent"/>
 
 
             <FrameLayout

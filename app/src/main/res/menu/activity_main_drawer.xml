@@ -23,7 +23,7 @@
 
         <item
             android:id="@+id/notifica_buraco"
-            android:icon="@drawable/icone_adiciona"
+            android:icon="@drawable/icone_adicionar"
             android:title="Notificar Buraco" />
     </group>
 
@@ -35,11 +35,11 @@
                 android:title="Configurações" />
             <item
                 android:id="@+id/ajuda"
-                android:icon="@drawable/icone_adiciona"
+                android:icon="@drawable/icone_ajuda"
                 android:title="Ajuda" />
             <item
                 android:id="@+id/sobre"
-                android:icon="@drawable/icone_adiciona"
+                android:icon="@drawable/icone_informacao"
                 android:title="Sobre" />
         </menu>
     </item>

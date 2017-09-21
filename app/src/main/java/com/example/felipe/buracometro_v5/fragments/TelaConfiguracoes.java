@@ -12,12 +12,12 @@ import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -25,7 +25,14 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.example.felipe.buracometro_v5.R;
-import com.example.felipe.buracometro_v5.util.FuncoesDoSistema;
+import com.example.felipe.buracometro_v5.dao.BuracoLocalDao;
+import com.example.felipe.buracometro_v5.dao.DaoFirebase;
+import com.example.felipe.buracometro_v5.listeners.OnGetFirebaseBuracosListener;
+import com.example.felipe.buracometro_v5.modelo.Buraco;
+import com.example.felipe.buracometro_v5.modelo.Usuario;
+import com.google.firebase.database.DatabaseError;
+
+import java.util.ArrayList;
 
 
 public class TelaConfiguracoes extends Fragment {
@@ -46,11 +53,13 @@ public class TelaConfiguracoes extends Fragment {
     int progresso = 0;
     private Handler handler = new Handler();
 
+    Usuario usuarioAtual = new Usuario();
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        view = inflater.inflate(R.layout.fr_tela_configuracoes, container, false);
+        view = inflater.inflate(R.layout.tela_configuracoes, container, false);
 
         ImageView imgToolbar = (ImageView) getActivity().findViewById(R.id.img_icone);
         imgToolbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.icone_configuracoes));
@@ -73,6 +82,14 @@ public class TelaConfiguracoes extends Fragment {
         //Pega as configuracoes escolhidas pelo usuário
         SharedPreferences settings = getActivity().getSharedPreferences("preferencias", 0);
         boolean mostraBtnManual = settings.getBoolean("botaoManual", false);
+        String emailAtual = settings.getString("login","");
+        String idUsuarioAtual = settings.getString("IdLogin","");
+        String nomeAtual = settings.getString("nome","");
+
+        usuarioAtual.setEmail(emailAtual);
+        usuarioAtual.setId(idUsuarioAtual);
+        usuarioAtual.setNome(nomeAtual);
+
 
         if(mostraBtnManual){
             btnPrefManual.setChecked(true);
@@ -99,14 +116,14 @@ public class TelaConfiguracoes extends Fragment {
                     SharedPreferences settings = getActivity().getSharedPreferences("preferencias", 0);
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putBoolean("botaoManual", true);
-                    editor.commit();
+                    editor.apply();
 
                 } else {
 
                     SharedPreferences settings = getActivity().getSharedPreferences("preferencias", 0);
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putBoolean("botaoManual", false);
-                    editor.commit();
+                    editor.apply();
 
                 }
             }
@@ -137,7 +154,7 @@ public class TelaConfiguracoes extends Fragment {
 
         btnSincronizar.setEnabled(false);
 
-        if (mudaImagem == false){
+        if (!mudaImagem){
 
             btnSincronizar.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sincronizar_neutro));
             btnSincronizar.setEnabled(true);
@@ -170,7 +187,7 @@ public class TelaConfiguracoes extends Fragment {
 
                     while(progresso <= mProgress.getMax())
                     {
-                        while(resultado != 0 && resultado != 1){
+                        while(resultado != 0 && resultado != 1 && resultado != 2){
 
                             try {
                                 // ---simulate doing some work---
@@ -222,8 +239,76 @@ public class TelaConfiguracoes extends Fragment {
 
 
     public void sincronizaComBDExterno(){
-        FuncoesDoSistema fds = new FuncoesDoSistema(getContext());
-        resultado = fds.sincronizaComBDExterno(identificador);
+
+        DaoFirebase daoFirebase = new DaoFirebase();
+
+        daoFirebase.listarBuracosPorUsuario(usuarioAtual, new OnGetFirebaseBuracosListener() {
+            @Override
+
+            public void onStart() {
+
+            }
+
+            @Override
+            public void onRetornoLista(ArrayList<Buraco> listaRetornada){
+
+                Log.e("Tamanho", "" + listaRetornada.size());
+
+                if(listaRetornada.isEmpty()){
+
+                    resultado = 2;
+
+                }else{
+
+                    BuracoLocalDao daoLocal = new BuracoLocalDao(getContext(),usuarioAtual.getEmail());
+                    try{
+                        daoLocal.deletarTodosDoUsuario();
+
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+                    for(int i = 0; i<listaRetornada.size(); i++) {
+
+                        try{
+                            daoLocal.inserirBuraco(listaRetornada.get(i));
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            resultado = 1;
+                        }
+
+                        if (resultado == 1){
+                            break;
+                        }
+
+                    }
+
+                    if (resultado != 1){
+                        resultado = 0;
+                    }
+                }
+
+            }
+
+            @Override
+            public void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados){
+
+            }
+
+            @Override
+            public void onFailed(DatabaseError databaseError) {
+            }
+
+            @Override
+            public void onRetornoExiste(Boolean existe){
+            }
+
+            @Override
+            public void onRetornoBuraco(Buraco buraco) {
+            }
+
+        });
+
     }
 
 
@@ -233,20 +318,24 @@ public class TelaConfiguracoes extends Fragment {
             btnSincronizar.setEnabled(true);
             mudaImagem = false;
 
-            switch (resultado)
-            {
-                case 0:
-                    btnSincronizar.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sincronizar_ok));
-                    Toast.makeText(getContext(), "Sincronizado com sucesso!", Toast.LENGTH_SHORT).show();
-                    break;
-                case 1:
-                    btnSincronizar.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sincronizar_erro));
-                    Toast.makeText(getContext(), "Erro ao sincronizar!", Toast.LENGTH_SHORT).show();
-                    break;
-                case 2:
-                    btnSincronizar.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sincronizar_erro));
-                    Toast.makeText(getContext(), "Erro ao sincronizar!", Toast.LENGTH_SHORT).show();
-                    break;
+            try{
+                switch (resultado)
+                {
+                    case 0:
+                        btnSincronizar.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sincronizar_ok));
+                        Toast.makeText(getContext(), "Sincronizado com sucesso!", Toast.LENGTH_SHORT).show();
+                        break;
+                    case 1:
+                        btnSincronizar.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sincronizar_erro));
+                        Toast.makeText(getContext(), "Erro ao sincronizar!", Toast.LENGTH_SHORT).show();
+                        break;
+                    case 2:
+                        btnSincronizar.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_sincronizar_erro));
+                        Toast.makeText(getContext(), "Não possui registro!", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }catch (Exception e){
+                e.printStackTrace();
             }
 
         }
@@ -265,8 +354,14 @@ public class TelaConfiguracoes extends Fragment {
 
         mensagemInfo.setPositiveButton(" Sim ", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                FuncoesDoSistema fs = new FuncoesDoSistema(getContext());
-                fs.excluirTodosBuracosLocais();
+                BuracoLocalDao dao = new BuracoLocalDao(getContext(), usuarioAtual.getEmail());
+                try{
+                    dao.deletarTodosDoUsuario();
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+                Toast.makeText(getContext(), "Seus registros foram deletados do dispositivo.", Toast.LENGTH_SHORT).show();
+
             }
         });
 
@@ -279,24 +374,5 @@ public class TelaConfiguracoes extends Fragment {
         alertar = mensagemInfo.create();
         alertar.show();
     }
-
-    public void deletarTodosServidor (View v){
-
-//        FuncoesDoSistema fs = new FuncoesDoSistema(this);
-//        fs.excluirTodosBuracosWEB();
-
-    }
-
-    public void mostraProgresso(boolean mostra){
-        if(mostra)
-        {
-            mProgressDeleta.setVisibility(View.VISIBLE);
-            mProgressDeleta.setIndeterminate(true);
-        }else
-        {
-            mProgressDeleta.setVisibility(View.INVISIBLE);
-        }
-    }
-
 
 }

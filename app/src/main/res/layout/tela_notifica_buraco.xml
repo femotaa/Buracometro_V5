@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="350dp"
+        android:layout_height="285dp"
+        android:layout_marginTop="05dp"
+        android:layout_centerHorizontal="true">
+
+        <fragment
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            class="com.google.android.gms.maps.SupportMapFragment"/>
+
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Você também pode segurar e arrastar o marcador para o endereço"
+        android:textSize="11sp"
+        android:id="@+id/textoIformativo"
+        android:textColor="#8f8d8f"
+        android:layout_below="@+id/relativeLayout"
+        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true" />
+
+    <fragment
+        android:id="@+id/place_autocomplete_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textoIformativo"
+        android:layout_marginTop="02dp"
+        android:name="com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment"
+        />
+
+    <Button
+        android:layout_width="55dip"
+        android:layout_height="55dip"
+        android:id="@+id/btnInserir"
+        android:background="@drawable/btn_manual_buraco"
+        android:layout_below="@+id/place_autocomplete_fragment"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:textAlignment="center">
+
+    </Button>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Notificar Buraco"
+        android:id="@+id/txtAviso"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/btnInserir"
+        android:layout_centerHorizontal="true" />
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:id="@+id/progressBarDeleta"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/txtAviso"
+        android:layout_marginTop="20dp"
+        android:visibility="invisible"/>
+
+
+
+</RelativeLayout>

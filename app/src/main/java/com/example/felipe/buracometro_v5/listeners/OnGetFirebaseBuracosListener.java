@@ -13,6 +13,7 @@ public interface OnGetFirebaseBuracosListener {
 
     void onStart();
     void onRetornoLista(ArrayList<Buraco> buracos);
+    void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados);
     void onFailed(DatabaseError databaseError);
     void onRetornoExiste(Boolean existe);
     void onRetornoBuraco(Buraco buraco);

@@ -1,33 +1,23 @@
 package com.example.felipe.buracometro_v5.fragments;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.felipe.buracometro_v5.R;
-import com.example.felipe.buracometro_v5.activities.MainActivity;
 import com.example.felipe.buracometro_v5.dao.DaoFirebase;
-import com.example.felipe.buracometro_v5.listeners.OnGetFirebaseBuracosListener;
-import com.example.felipe.buracometro_v5.listeners.OnGetFirebaseDados;
-import com.example.felipe.buracometro_v5.listeners.OnGetFirebaseUsuarioListener;
 import com.example.felipe.buracometro_v5.modelo.Buraco;
 import com.example.felipe.buracometro_v5.modelo.Usuario;
-import com.google.firebase.database.DatabaseError;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 
@@ -45,7 +35,7 @@ public class TelaMenu extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        view = inflater.inflate(R.layout.fr_tela_menu, container, false);
+        view = inflater.inflate(R.layout.tela_menu, container, false);
 
         ImageView imgToolbar = (ImageView) getActivity().findViewById(R.id.img_icone);
         imgToolbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.icone_lista));
@@ -97,13 +87,13 @@ public class TelaMenu extends Fragment{
                 Date netDate = (new Date(timestamp));
                 data =  sdf.format(netDate);
 
-                b.setBairro("Jardim d'Abril");
-                b.setCidade("Osasco");
+                b.setBairro("Higienopolis");
+                b.setCidade("Jandira");
                 b.setData_Registro(ts); //timestamp
-                b.setRua("Avenida Bussocaba");
+                b.setRua("Rua do Ouro");
                 b.setEstado("SP");
-                b.setLatitude("45.1111998");
-                b.setLongitude("45.96789");
+                b.setLatitude("42.99999");
+                b.setLongitude("41.45789");
                 b.setStatusBuraco("Aberto");
                 b.setQtdOcorrencia(1);
 
@@ -116,6 +106,12 @@ public class TelaMenu extends Fragment{
 
     public void adicionarBuraco(Buraco buraco){
 
+        //Long tsLong = System.currentTimeMillis()/1000;
+        //String ts = tsLong.toString();
+        //buraco.setDataTampado(ts);
+        //buraco.setStatusBuraco("Tampado");
+        //buraco.setIdBuraco("-Kpml_v12vceeeee");
+        //daoFirebase.inserirBuracoTampado(buraco);
 
         //daoFirebase.inserirBuraco(buraco, usuarioAtual);
         //daoFirebase.atualizarStatusParaTampado(buraco);
@@ -139,7 +135,7 @@ public class TelaMenu extends Fragment{
         //daoFirebase.inserirOnlyBuraco(buraco);
 
         /* * /
-        new DaoFirebase().listarBuracosCriticos(usuarioAtual, 0, new OnGetFirebaseBuracosListener() {
+        new DaoFirebase().listarBuracosPorUsuario(usuarioAtual, new OnGetFirebaseBuracosListener() {
             @Override
 
             public void onStart() {
@@ -153,8 +149,20 @@ public class TelaMenu extends Fragment{
                 //Log.e("Buraquim2", "" + buracos.get(0).getIdBuraco());
                 //Log.e("Buraquim3", "" + buracos.get(1).getIdBuraco());
                 Log.e("Total", "" + buracos.size());
+                if(!buracos.isEmpty()){
+
+                    Log.e("IdBura", "" + buracos.get(0).getIdBuraco());
+                    Log.e("IdBura", "" + buracos.get(1).getIdBuraco());
+                    Log.e("IdBura", "" + buracos.get(2).getIdBuraco());
+                }
+
 
                 //DO SOME THING WHEN GET DATA SUCCESS HERE
+
+            }
+
+            @Override
+            public void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados){
 
             }
 
@@ -177,7 +185,7 @@ public class TelaMenu extends Fragment{
         });
         /* */
 
-        /* */
+        /* * /
         new DaoFirebase().pegarTotaldeBuracosTampados(new OnGetFirebaseDados() {
 
             @Override
