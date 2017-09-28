@@ -25,7 +25,7 @@
         <ImageButton
             android:layout_width="150dip"
             android:layout_height="150dip"
-            android:id="@+id/btnRecentes"
+            android:id="@+id/btnAdicionar"
             android:layout_marginRight="18dip"
             android:layout_marginTop="10dip"
             android:layout_alignParentRight="true"
@@ -40,8 +40,8 @@
             android:layout_height="150dip"
             android:layout_marginTop="10dip"
             android:layout_marginLeft="18dip"
-            android:id="@+id/btnAreasCriticas"
-            android:layout_below="@+id/btnRegistrados"
+            android:id="@+id/btnMapa"
+            android:layout_below="@id/btnRegistrados"
             android:background="@drawable/btn_mapa_xml"
             android:onClick="mudarTelaMapas"
             android:contentDescription="@string/app_name">
@@ -55,25 +55,40 @@
             android:layout_marginRight="18dip"
             android:layout_marginTop="10dip"
             android:layout_alignParentRight="true"
-            android:layout_below="@+id/btnRecentes"
+            android:layout_below="@id/btnAdicionar"
             android:background="@drawable/btn_estatisticas_xml"
             android:onClick="mudarTelaEstatisticas"
             android:contentDescription="@string/app_name">
 
         </ImageButton>
 
-        <ToggleButton
-            android:layout_width="150dip"
-            android:layout_height="090dip"
-            android:id="@+id/btnBuracometro"
-            android:layout_alignParentBottom="true"
+        <ProgressBar
+            style="?android:attr/progressBarStyleHorizontal"
+            android:id="@+id/progressLigarBuracometro"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:indeterminate="false"
+            android:progress="0"
+            android:max="100"
+            android:secondaryProgress="100"
+            android:progressDrawable="@drawable/barra_progresso_circular"
+            android:layout_below="@id/btnMapa"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="50dip"
-            android:background="@drawable/btn_ligar2"
-            android:textOn=""
-            android:textOff="">
+            android:layout_marginTop="10dp"/>
 
-        </ToggleButton>
+
+        <Button
+            android:layout_width="97dip"
+            android:layout_height="97dip"
+            android:id="@+id/btnligarBuracometro"
+            android:background="@drawable/btn_sincronizar"
+            android:layout_below="@id/progressLigarBuracometro"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="-124dp"
+            android:textAlignment="center">
+
+        </Button>
+
 
         <Button
             android:layout_width="50dip"
@@ -83,9 +98,9 @@
             android:background="@drawable/btn_manual_buraco"
             android:layout_marginLeft="20dp"
             android:layout_marginBottom="20dp"
-            android:layout_alignBottom="@+id/btnBuracometro"
-            android:layout_toRightOf="@+id/btnBuracometro"
-            android:layout_toEndOf="@+id/btnBuracometro"
+            android:layout_alignBottom="@id/progressLigarBuracometro"
+            android:layout_toRightOf="@id/progressLigarBuracometro"
+            android:layout_toEndOf="@id/progressLigarBuracometro"
             android:visibility="invisible">
 
         </Button>
@@ -96,7 +111,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:visibility="invisible"
-            android:layout_below="@+id/btnAreasCriticas"
+            android:layout_below="@id/btnMapa"
             android:layout_centerHorizontal="true" />
 
         <TextView
@@ -109,7 +124,16 @@
 
             android:textColor="#ffffff"
             android:visibility="invisible"
-            android:layout_above="@+id/barra_progress_achado"
+            android:layout_above="@id/barra_progress_achado"
+            android:layout_centerHorizontal="true" />
+
+        <ImageView
+            android:id="@+id/buracometroLigado"
+            android:layout_width="260dp"
+            android:layout_height="260dp"
+            android:background="@drawable/img_buracometro_ligado"
+            android:visibility="invisible"
+            android:layout_alignBottom="@+id/btnSincronizar"
             android:layout_centerHorizontal="true" />
 
 

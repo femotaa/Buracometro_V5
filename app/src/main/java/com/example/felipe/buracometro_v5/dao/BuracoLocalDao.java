@@ -9,11 +9,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 
 import com.example.felipe.buracometro_v5.listeners.OnGetFirebaseBuracosListener;
 import com.example.felipe.buracometro_v5.modelo.Buraco;
 import com.example.felipe.buracometro_v5.modelo.Usuario;
+import com.example.felipe.buracometro_v5.util.Truncar;
 
 import java.util.ArrayList;
 
@@ -87,18 +89,93 @@ public class BuracoLocalDao extends SQLiteOpenHelper {
 
     public boolean validaSeBuracoExiste(Buraco bura) throws Exception
     {
-        /*
-            Retornos dessa função
-            0 - Buraco não encontrado
-            1 - Buraco encontrado
-            2 - Buraco encontrado, com status "Tampado"
 
-         */
+        boolean resultado;
+
+        resultado = procuraBuraco(bura.getLatitude(), bura.getLongitude());
+
+        if (!resultado){
+            return  false;
+        }
+
+        double latitude,longitude;
+        latitude = Double.parseDouble(bura.getLatitude());
+        longitude = Double.parseDouble(bura.getLongitude());
+
+        double lat;
+        double log;
+        final Truncar t = new Truncar();
+
+        lat = (latitude + 0.0001);
+        log = longitude;
+        lat = t.truncate(lat, 4);
+        log = t.truncate(log, 4);
+        Log.e("lat_log", "" + lat + log);
+        resultado = procuraBuraco(String.valueOf(lat), String.valueOf(log));
+        if (!resultado){
+            return  false;
+        }
+
+        lat = (latitude + 0.0001);
+        log = (longitude + 0.0001);
+        lat = t.truncate(lat, 4);
+        log = t.truncate(log, 4);
+        Log.e("lat_log", "" + lat + log);
+        resultado = procuraBuraco(String.valueOf(lat), String.valueOf(log));
+        if (!resultado){
+            return  false;
+        }
+
+        lat = (latitude - 0.0001);
+        log = longitude;
+        lat = t.truncate(lat, 4);
+        log = t.truncate(log, 4);
+        Log.e("lat_log", "" + lat + log);
+        resultado = procuraBuraco(String.valueOf(lat), String.valueOf(log));
+        if (!resultado){
+            return  false;
+        }
+
+        lat = (latitude - 0.0001);
+        log = (longitude - 0.0001);
+        lat = t.truncate(lat, 4);
+        log = t.truncate(log, 4);
+        Log.e("lat_log", "" + lat + log);
+        resultado = procuraBuraco(String.valueOf(lat), String.valueOf(log));
+        if (!resultado){
+            return  false;
+        }
+
+        lat = latitude;
+        log = (longitude + 0.0001);
+        lat = t.truncate(lat, 4);
+        log = t.truncate(log, 4);
+        Log.e("lat_log", "" + lat + log);
+        resultado = procuraBuraco(String.valueOf(lat), String.valueOf(log));
+        if (!resultado){
+            return  false;
+        }
+
+        lat = latitude;
+        log = (longitude - 0.0001);
+        lat = t.truncate(lat, 4);
+        log = t.truncate(log, 4);
+        Log.e("lat_log", "" + lat + log);
+        resultado = procuraBuraco(String.valueOf(lat), String.valueOf(log));
+        if (!resultado){
+            return  false;
+        }
+
+        return true;
+    }
+
+    public boolean procuraBuraco(String latitude, String longitude) throws Exception
+    {
 
         SQLiteDatabase db = getReadableDatabase();
 
-        String query = "SELECT id FROM buraco WHERE latitude = '" + bura.getLatitude() +
-                "' and longitude = '" + bura.getLongitude() + "' AND status = 'Aberto' LIMIT 1";
+        String query = "SELECT id FROM buraco WHERE latitude = '" + latitude +
+                "' and longitude = '" + longitude + "' AND status = 'Aberto' LIMIT 1";
 
         Cursor cursor = db.rawQuery(query, null);
 

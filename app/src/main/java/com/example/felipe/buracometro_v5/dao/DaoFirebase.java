@@ -10,6 +10,7 @@ import com.example.felipe.buracometro_v5.modelo.Buraco;
 import com.example.felipe.buracometro_v5.modelo.Cidade;
 import com.example.felipe.buracometro_v5.modelo.Rua;
 import com.example.felipe.buracometro_v5.modelo.Usuario;
+import com.example.felipe.buracometro_v5.util.Truncar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -41,7 +42,16 @@ public class DaoFirebase {
 
     public void inserirBuraco(final Buraco mburaco, final Usuario mUsuario){
 
-        isBuracoExiste(mburaco, new OnGetFirebaseBuracosListener() {
+        final double latitude = Double.parseDouble(mburaco.getLatitude());
+        final double longitude = Double.parseDouble(mburaco.getLongitude());
+        final Truncar t = new Truncar();
+        Log.e("lat_1", mburaco.getLatitudeLongitude());
+
+        //Rever este metodo, pq nao esta nada legal... TODO
+
+        //-----------------------------------------------------------------------------------//
+        //-----------------------------------------------------------------------------------//
+        isBuracoExiste(mburaco.getLatitudeLongitude(), new OnGetFirebaseBuracosListener() {
 
             @Override
             public void onStart() {
@@ -67,22 +77,295 @@ public class DaoFirebase {
 
                 if (buracoComID == null){
 
-                    inserirOnlyBuraco(mburaco);
-                    inserirBuracoUsuario(mburaco, mUsuario);
-                    atualizaCidadeQtdBuracos(true, mburaco);
-                    atualizaRuaQtdBuracos(true, mburaco);
-                    atualizaTotalDeBuracosAbertos(true);
-                    validaSeTemBuracoIndevidoTampado(mburaco);
+                    //-----------------------------------------------------------------------------------//
+                    //-----------------------------------------------------------------------------------//
+                    double lat = (latitude + 0.0001);
+                    double log = longitude;
+                    lat = t.truncate(lat, 4);
+                    log = t.truncate(log, 4);
+                    String latLong = String.valueOf(lat) + "_" + String.valueOf(log);
+                    Log.e("lat_ultimo", latLong);
+
+                    isBuracoExiste(latLong, new OnGetFirebaseBuracosListener() {
+
+                        @Override
+                        public void onStart() {
+                        }
+
+                        @Override
+                        public void onRetornoLista(ArrayList<Buraco> buracos){
+                        }
+
+                        @Override
+                        public void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados){}
+
+                        @Override
+                        public void onFailed(DatabaseError databaseError) {
+                        }
+
+                        @Override
+                        public void onRetornoExiste(Boolean existe){
+                        }
+
+                        @Override
+                        public void onRetornoBuraco(Buraco buracoComID) {
+
+                            if (buracoComID == null){
+
+                                //-----------------------------------------------------------------------------------//
+                                //-----------------------------------------------------------------------------------//
+                                double lat = (latitude + 0.0001);
+                                double log = (longitude + 0.0001);
+                                lat = t.truncate(lat, 4);
+                                log = t.truncate(log, 4);
+                                String latLong = String.valueOf(lat) + "_" + String.valueOf(log);
+                                Log.e("lat_ultimo", latLong);
+
+                                isBuracoExiste(latLong, new OnGetFirebaseBuracosListener() {
+
+                                    @Override
+                                    public void onStart() {
+                                    }
+
+                                    @Override
+                                    public void onRetornoLista(ArrayList<Buraco> buracos){
+                                    }
+
+                                    @Override
+                                    public void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados){}
+
+                                    @Override
+                                    public void onFailed(DatabaseError databaseError) {
+                                    }
+
+                                    @Override
+                                    public void onRetornoExiste(Boolean existe){
+                                    }
+
+                                    @Override
+                                    public void onRetornoBuraco(Buraco buracoComID) {
+
+                                        if (buracoComID == null){
+
+                                            //-----------------------------------------------------------------------------------//
+                                            //-----------------------------------------------------------------------------------//
+                                            double lat = (latitude - 0.0001);
+                                            double log = longitude;
+                                            lat = t.truncate(lat, 4);
+                                            log = t.truncate(log, 4);
+                                            String latLong = String.valueOf(lat) + "_" + String.valueOf(log);
+                                            Log.e("lat_ultimo", latLong);
+
+                                            isBuracoExiste(latLong, new OnGetFirebaseBuracosListener() {
+
+                                                @Override
+                                                public void onStart() {
+                                                }
+
+                                                @Override
+                                                public void onRetornoLista(ArrayList<Buraco> buracos){
+                                                }
+
+                                                @Override
+                                                public void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados){}
+
+                                                @Override
+                                                public void onFailed(DatabaseError databaseError) {
+                                                }
+
+                                                @Override
+                                                public void onRetornoExiste(Boolean existe){
+                                                }
+
+                                                @Override
+                                                public void onRetornoBuraco(Buraco buracoComID) {
+
+                                                    if (buracoComID == null){
+
+                                                        //-----------------------------------------------------------------------------------//
+                                                        //-----------------------------------------------------------------------------------//
+                                                        double lat = (latitude - 0.0001);
+                                                        double log = (longitude - 0.0001);
+                                                        lat = t.truncate(lat, 4);
+                                                        log = t.truncate(log, 4);
+                                                        String latLong = String.valueOf(lat) + "_" + String.valueOf(log);
+                                                        Log.e("lat_ultimo", latLong);
+
+                                                        isBuracoExiste(latLong, new OnGetFirebaseBuracosListener() {
+
+                                                            @Override
+                                                            public void onStart() {
+                                                            }
+
+                                                            @Override
+                                                            public void onRetornoLista(ArrayList<Buraco> buracos){
+                                                            }
+
+                                                            @Override
+                                                            public void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados){}
+
+                                                            @Override
+                                                            public void onFailed(DatabaseError databaseError) {
+                                                            }
+
+                                                            @Override
+                                                            public void onRetornoExiste(Boolean existe){
+                                                            }
+
+                                                            @Override
+                                                            public void onRetornoBuraco(Buraco buracoComID) {
+
+                                                                if (buracoComID == null){
+
+                                                                    //-----------------------------------------------------------------------------------//
+                                                                    //-----------------------------------------------------------------------------------//
+                                                                    double lat = latitude;
+                                                                    double log = (longitude + 0.0001);
+                                                                    lat = t.truncate(lat, 4);
+                                                                    log = t.truncate(log, 4);
+                                                                    String latLong = String.valueOf(lat) + "_" + String.valueOf(log);
+                                                                    Log.e("lat_ultimo", latLong);
+
+                                                                    isBuracoExiste(latLong, new OnGetFirebaseBuracosListener() {
+
+                                                                        @Override
+                                                                        public void onStart() {
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onRetornoLista(ArrayList<Buraco> buracos){
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados){}
+
+                                                                        @Override
+                                                                        public void onFailed(DatabaseError databaseError) {
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onRetornoExiste(Boolean existe){
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onRetornoBuraco(Buraco buracoComID) {
+
+                                                                            if (buracoComID == null){
+
+                                                                                //-----------------------------------------------------------------------------------//
+                                                                                //-----------------------------------------------------------------------------------//
+                                                                                double lat = latitude;
+                                                                                double log = (longitude - 0.0001);
+                                                                                lat = t.truncate(lat, 4);
+                                                                                log = t.truncate(log, 4);
+                                                                                String latLong = String.valueOf(lat) + "_" + String.valueOf(log);
+                                                                                Log.e("lat_ultimo", latLong);
+                                                                                Log.e("lat_log", "" + lat + log);
+                                                                                Log.e("longitude", "" + longitude);
+
+                                                                                isBuracoExiste(latLong, new OnGetFirebaseBuracosListener() {
+
+                                                                                    @Override
+                                                                                    public void onStart() {
+                                                                                    }
+
+                                                                                    @Override
+                                                                                    public void onRetornoLista(ArrayList<Buraco> buracos){
+                                                                                    }
+
+                                                                                    @Override
+                                                                                    public void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados){}
+
+                                                                                    @Override
+                                                                                    public void onFailed(DatabaseError databaseError) {
+                                                                                    }
+
+                                                                                    @Override
+                                                                                    public void onRetornoExiste(Boolean existe){
+                                                                                    }
+
+                                                                                    @Override
+                                                                                    public void onRetornoBuraco(Buraco buracoComID) {
+
+                                                                                        if (buracoComID == null){
+
+                                                                                            inserirOnlyBuraco(mburaco);
+                                                                                            inserirBuracoUsuario(mburaco, mUsuario);
+                                                                                            atualizaCidadeQtdBuracos(true, mburaco);
+                                                                                            atualizaRuaQtdBuracos(true, mburaco);
+                                                                                            atualizaTotalDeBuracosAbertos(true);
+                                                                                            validaSeTemBuracoIndevidoTampado(mburaco);
+
+                                                                                        }else{
+
+                                                                                            temBuracoParaUsuario(buracoComID, mUsuario);
+                                                                                        }
+
+                                                                                    }
+
+                                                                                });
+
+
+                                                                            }else{
+
+                                                                                temBuracoParaUsuario(buracoComID, mUsuario);
+                                                                            }
+
+                                                                        }
+
+                                                                    });
+
+
+                                                                }else{
+
+                                                                    temBuracoParaUsuario(buracoComID, mUsuario);
+                                                                }
+
+                                                            }
+
+                                                        });
+
+
+                                                    }else{
+
+                                                        temBuracoParaUsuario(buracoComID, mUsuario);
+                                                    }
+
+                                                }
+
+                                            });
+
+
+
+                                        }else{
+
+                                            temBuracoParaUsuario(buracoComID, mUsuario);
+                                        }
+
+                                    }
+
+                                });
+
+
+                            }else{
+
+                                temBuracoParaUsuario(buracoComID, mUsuario);
+                            }
+
+                        }
+
+                    });
+
 
                 }else{
 
                     temBuracoParaUsuario(buracoComID, mUsuario);
-
                 }
 
             }
 
         });
+
 
     }
 
@@ -138,15 +421,12 @@ public class DaoFirebase {
     //                         METODOS PARA VALIDAR SE BURACO EXISTE
     //----------------------------------------------------------------------------------------
 
-    private void isBuracoExiste(Buraco buraco, OnGetFirebaseBuracosListener listener2){
-
-        listenerBuraco = listener2;
-        listenerBuraco.onStart();
+    private void isBuracoExiste(String LatLong, final OnGetFirebaseBuracosListener listener){
 
         DatabaseReference databaseBura;
 
         databaseBura = FirebaseDatabase.getInstance().getReference("Buracos").child("Abertos");
-        final Query query = databaseBura.orderByChild("latitudeLongitude").equalTo(buraco.getLatitudeLongitude());
+        final Query query = databaseBura.orderByChild("latitudeLongitude").equalTo(LatLong);
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -157,11 +437,11 @@ public class DaoFirebase {
                     for (DataSnapshot messageSnapshot: dataSnapshot.getChildren()) {
 
                         Buraco buraco = messageSnapshot.getValue(Buraco.class);
-                        listenerBuraco.onRetornoBuraco(buraco);
+                        listener.onRetornoBuraco(buraco);
                     }
 
                 }else{
-                    listenerBuraco.onRetornoBuraco(null);
+                    listener.onRetornoBuraco(null);
                 }
 
             }

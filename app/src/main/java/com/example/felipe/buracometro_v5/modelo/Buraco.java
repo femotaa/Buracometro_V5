@@ -175,7 +175,8 @@ public class Buraco implements Parcelable {
                 this.rua + '\n' +
                 "Cidade: " + this.cidade + '\n' +
                 "Estado: " + this.estado + '\n' +
-                "Data_Registro: " + this.Data_Registro;
+                "Data_Registro: " + this.Data_Registro + '\n' +
+                "LatLong: " + latitude + longitude;
     }
 
 

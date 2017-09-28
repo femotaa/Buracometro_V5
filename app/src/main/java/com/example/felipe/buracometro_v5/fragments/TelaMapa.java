@@ -40,7 +40,7 @@ public class TelaMapa extends Fragment implements OnMapReadyCallback {
 
     TabHost tabhost;
     ProgressBar progressBar;
-
+    View view;
 
     ArrayList<Buraco> listaRegistros = new ArrayList<Buraco>();
     ArrayList<Buraco> listaCriticos = new ArrayList<Buraco>();
@@ -53,7 +53,7 @@ public class TelaMapa extends Fragment implements OnMapReadyCallback {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.tela_mapa, container, false);
+        view = inflater.inflate(R.layout.tela_mapa, container, false);
 
         ImageView imgToolbar = (ImageView) getActivity().findViewById(R.id.img_icone);
         imgToolbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.icone_mapa));
@@ -274,8 +274,6 @@ public class TelaMapa extends Fragment implements OnMapReadyCallback {
 
                     }
                 });
-
-                Log.e("Passou", "hey hey");
 
             }
         }).start();

@@ -46,9 +46,9 @@ import java.util.Map;
 import static com.google.android.gms.wearable.DataMap.TAG;
 
 
-public class TelaNotificaBuraco extends Fragment implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener {
+public class TelaAdicionarBuraco extends Fragment implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener {
 
-    private static final String TEXTO_TOOLBAR = "Notificar Buraco";
+    private static final String TEXTO_TOOLBAR = "Adicionar Buraco";
     private GoogleMap mMap;
     Marker markerOptions;
     LatLng latLng = new LatLng(0, 0);
@@ -58,13 +58,11 @@ public class TelaNotificaBuraco extends Fragment implements OnMapReadyCallback, 
 
     Buraco buracoMarcado;
 
-    private GoogleApiClient mGoogleApiClient;
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        view = inflater.inflate(R.layout.tela_notifica_buraco, container, false);
+        view = inflater.inflate(R.layout.tela_adicionar_buraco, container, false);
 
         ImageView imgToolbar = (ImageView) getActivity().findViewById(R.id.img_icone);
         imgToolbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.icone_adicionar));
@@ -118,7 +116,6 @@ public class TelaNotificaBuraco extends Fragment implements OnMapReadyCallback, 
 
             @Override
             public void onError(Status status) {
-                // TODO: Solucionar o erro.
                 Log.e(TAG, "Ocorreu um erro: " + status);
             }
         });

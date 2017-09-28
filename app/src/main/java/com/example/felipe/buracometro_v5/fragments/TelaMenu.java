@@ -1,35 +1,57 @@
 package com.example.felipe.buracometro_v5.fragments;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.drawable.AnimationDrawable;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.felipe.buracometro_v5.R;
-import com.example.felipe.buracometro_v5.dao.DaoFirebase;
 import com.example.felipe.buracometro_v5.modelo.Buraco;
 import com.example.felipe.buracometro_v5.modelo.Usuario;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import com.example.felipe.buracometro_v5.util.BuracometroUtil;
+import com.example.felipe.buracometro_v5.util.PreencheDadosDoBuraco;
 
 
-public class TelaMenu extends Fragment{
+public class TelaMenu extends Fragment implements SensorEventListener {
 
     private static final String TEXTO_TOOLBAR = "";
 
     View view;
     Button btnAddBuraco;
-    Usuario usuarioAtual = new Usuario();
-    DaoFirebase daoFirebase = new DaoFirebase();
+    Button btnLigarBuracometro;
+    ImageButton btnRegistros, btnAdicionar, btnMapa, btnEstatisticas;
+    ImageView   buracoImagem;
 
+    ProgressBar progressLigarBuracometro;
+    boolean apertado = false;
+    boolean isBuracometroLigado = false;
+    private Handler handler = new Handler();
+
+    Usuario usuarioAtual = new Usuario();
+
+    private SensorManager senSensorManager;
+    private Sensor        senAccelerometer;
+
+    Handler handler1 = new Handler();
 
     @Nullable
     @Override
@@ -40,9 +62,17 @@ public class TelaMenu extends Fragment{
         ImageView imgToolbar = (ImageView) getActivity().findViewById(R.id.img_icone);
         imgToolbar.setBackgroundDrawable(getResources().getDrawable(R.drawable.icone_lista));
 
-
         TextView textoToolbar = (TextView) getActivity().findViewById(R.id.texto_toolbar);
         textoToolbar.setText(TEXTO_TOOLBAR);
+
+        btnLigarBuracometro = (Button) view.findViewById(R.id.btnligarBuracometro);
+        progressLigarBuracometro = (ProgressBar) view.findViewById(R.id.progressLigarBuracometro);
+
+        btnRegistros = (ImageButton) view.findViewById(R.id.btnRegistrados);
+        btnAdicionar = (ImageButton) view.findViewById(R.id.btnAdicionar);
+        btnMapa = (ImageButton) view.findViewById(R.id.btnMapa);
+        btnEstatisticas = (ImageButton) view.findViewById(R.id.btnEstatisticas);
+        buracoImagem = (ImageView) view.findViewById(R.id.buracometroLigado);
 
         btnAddBuraco = (Button) view.findViewById(R.id.btnManual);
 
@@ -60,9 +90,7 @@ public class TelaMenu extends Fragment{
         if(mostraBtnManual){
 
             btnAddBuraco.setVisibility(View.VISIBLE);
-
         }
-
 
         return view;
     }
@@ -76,136 +104,253 @@ public class TelaMenu extends Fragment{
             @Override
             public void onClick(View v)
             {
-                Buraco b = new Buraco();
-
-                Long tsLong = System.currentTimeMillis()/1000;
-                String ts = tsLong.toString();
-
-                long timestamp = Long.parseLong(ts) * 1000L;
-                String data;
-                DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Date netDate = (new Date(timestamp));
-                data =  sdf.format(netDate);
-
-                b.setBairro("Higienopolis");
-                b.setCidade("Jandira");
-                b.setData_Registro(ts); //timestamp
-                b.setRua("Rua do Ouro");
-                b.setEstado("SP");
-                b.setLatitude("42.99999");
-                b.setLongitude("41.45789");
-                b.setStatusBuraco("Aberto");
-                b.setQtdOcorrencia(1);
-
-                adicionarBuraco(b);
+                encontrarDadosDoBuraco();
             }
         });
 
-    }
 
 
-    public void adicionarBuraco(Buraco buraco){
-
-        //Long tsLong = System.currentTimeMillis()/1000;
-        //String ts = tsLong.toString();
-        //buraco.setDataTampado(ts);
-        //buraco.setStatusBuraco("Tampado");
-        //buraco.setIdBuraco("-Kpml_v12vceeeee");
-        //daoFirebase.inserirBuracoTampado(buraco);
-
-        //daoFirebase.inserirBuraco(buraco, usuarioAtual);
-        //daoFirebase.atualizarStatusParaTampado(buraco);
-        //daoFirebase.atualizarStatusParaTampadoUsuarios(buraco);
-
-        //daoFirebase.atualizaTotalDeBuracosTampados(false);
-
-        //buraco.setIdBuraco("-KpmeZRvgximEcwiQMDO");
-        //daoFirebase.inserirBuracoTampado(buraco);
-
-//        Toast.makeText(getContext(), "Buraco adicinado", Toast.LENGTH_LONG).show();
-
-        //buraco.setIdBuraco("-Kp6w_mNLV81ng0VDMN_");
-
-        //daoFirebase.atualizaRuaQtdBuracos(buraco);
-
-        //daoFirebase.atualizaQtdOcorrencia(buraco);
-
-        //daoFirebase.atualizaCidadeQtdBuracos(buraco);
-
-        //daoFirebase.inserirOnlyBuraco(buraco);
-
-        /* * /
-        new DaoFirebase().listarBuracosPorUsuario(usuarioAtual, new OnGetFirebaseBuracosListener() {
-            @Override
-
-            public void onStart() {
-                //DO SOME THING WHEN START GET DATA HERE
-            }
+        btnLigarBuracometro.setOnTouchListener(new View.OnTouchListener() {
 
             @Override
-            public void onRetornoLista(ArrayList<Buraco> buracos){
+            public boolean onTouch(View v, MotionEvent event) {
 
+                switch (event.getAction()){
 
-                //Log.e("Buraquim2", "" + buracos.get(0).getIdBuraco());
-                //Log.e("Buraquim3", "" + buracos.get(1).getIdBuraco());
-                Log.e("Total", "" + buracos.size());
-                if(!buracos.isEmpty()){
+                    case MotionEvent.ACTION_DOWN:
 
-                    Log.e("IdBura", "" + buracos.get(0).getIdBuraco());
-                    Log.e("IdBura", "" + buracos.get(1).getIdBuraco());
-                    Log.e("IdBura", "" + buracos.get(2).getIdBuraco());
+                        if(!isBuracometroLigado){
+                            apertado = true;
+                            progresso = 0;
+                            progressLigarBuracometro.setProgress(0);
+                            ativarProgressBar();
+                            break;
+                        }else{
+                            desligarBuracometro();
+                            break;
+                        }
+
+                    case MotionEvent.ACTION_UP:
+                        apertado = false;
+                        progresso = 0;
+                        progressLigarBuracometro.setProgress(0);
+                        break;
                 }
 
-
-                //DO SOME THING WHEN GET DATA SUCCESS HERE
-
+                return false;
             }
-
-            @Override
-            public void onRetornoDuasLista(ArrayList<Buraco> buracosAbertos, ArrayList<Buraco> buracosTampados){
-
-            }
-
-            @Override
-            public void onFailed(DatabaseError databaseError) {
-                //DO SOME THING WHEN GET DATA FAILED HERE
-            }
-
-            @Override
-            public void onRetornoExiste(Boolean existe){
-                //DO SOME THING WHEN GET DATA FAILED HERE
-            }
-
-            @Override
-            public void onRetornoBuraco(Buraco buraco) {
-                //DO SOME THING WHEN GET DATA FAILED HERE
-            }
-
-
         });
-        /* */
-
-        /* * /
-        new DaoFirebase().pegarTotaldeBuracosTampados(new OnGetFirebaseDados() {
-
-            @Override
-            public void onRetornoDados(int total) {
-                Log.e("TOTALTUDO", "" + total);
-            }
-
-            @Override
-            public void onStart() {
-            }
-
-
-            @Override
-            public void onFailed(DatabaseError databaseError) {
-            }
-
-        });
-        /* */
 
     }
+
+
+    int progresso;
+    public void ativarProgressBar (){
+
+        progressLigarBuracometro.setMax(100);
+        progressLigarBuracometro.setProgress(50);
+        progressLigarBuracometro.setProgress(0);
+        progressLigarBuracometro.setVisibility(View.VISIBLE);
+
+        new Thread(new Runnable() {
+            public void run() {
+
+                while (apertado){
+
+                    try {
+                        // ---simulate doing some work---
+                        Thread.sleep(15);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    progressLigarBuracometro.setProgress(progresso);
+                    progresso++;
+
+                     if(progressLigarBuracometro.getProgress() >= 100){
+
+                         handler.post(new Runnable() {
+                             public void run() {
+                                 ligarBuracometro();
+                             }});
+                         break;
+                     }
+                }
+
+                progresso = 0;
+                handler.post(new Runnable() {
+                    public void run() {
+                        progressLigarBuracometro.setVisibility(View.INVISIBLE);
+                        progressLigarBuracometro.setProgress(0);
+                    }});
+
+
+                apertado = false;
+            }
+        }).start();
+
+
+    }
+
+    public void ligarBuracometro (){
+
+        if (!isBuracometroLigado){
+            Log.e("Buracometro", "Ligado");
+            btnRegistros.setVisibility(View.INVISIBLE);
+            btnAdicionar.setVisibility(View.INVISIBLE);
+            btnMapa.setVisibility(View.INVISIBLE);
+            btnEstatisticas.setVisibility(View.INVISIBLE);
+
+            buracoImagem.setVisibility(View.VISIBLE);
+            buracoImagem.setBackgroundResource(R.drawable.img_buracometro_ligado);
+            AnimationDrawable anim = (AnimationDrawable) buracoImagem.getBackground();
+            anim.start();
+
+            ativarSensores();
+            isBuracometroLigado = true;
+        }
+
+    }
+
+    public void desligarBuracometro (){
+
+        if (isBuracometroLigado){
+            Log.e("Buracometro", "Desligado");
+            btnRegistros.setVisibility(View.VISIBLE);
+            btnAdicionar.setVisibility(View.VISIBLE);
+            btnMapa.setVisibility(View.VISIBLE);
+            btnEstatisticas.setVisibility(View.VISIBLE);
+
+            buracoImagem.setVisibility(View.INVISIBLE);
+            buracoImagem.setBackgroundResource(R.drawable.img_buracometro_ligado);
+
+            desativarSensores();
+            isBuracometroLigado = false;
+
+        }
+
+    }
+
+
+    //----------------------------------------------------------------------------------------
+    //                 METODOS PARA UTILIZAÇÃO DOS SENSORES DE MOVIMENTO
+    //----------------------------------------------------------------------------------------
+
+    //Ver quais metodos do ciclo de vida do Android devera deixar o sensores de movimento ativos.
+    @Override
+    public void onPause() {
+        super.onPause();
+        //Quando celular inativo, desativar sensores do android
+        if (isBuracometroLigado){
+            desativarSensores();
+        }
+    }
+
+    public void ativarSensores(){
+        //senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        senSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+        senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    public void desativarSensores (){
+        senSensorManager.unregisterListener(this);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+
+        if (isBuracometroLigado)
+        {
+            Sensor mySensor = sensorEvent.sensor;
+            if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER)
+            {
+                float x = sensorEvent.values[0];
+                float y = sensorEvent.values[1];
+                float z = sensorEvent.values[2];
+
+                //Regras para que o Buraco seja identificado
+                if (x > 4 || y > 4)
+                {
+                    Log.e("Buraco", "IDENTIFICADO");
+                    encontrarDadosDoBuraco();
+//                  Toast.makeText(this, "Buraco identificado!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
+    }
+
+
+
+    //----------------------------------------------------------------------------------------
+    //                 METODOS PARA GRAVAÇAO DO BURACO QUANDO IDENTIFICADO
+    //----------------------------------------------------------------------------------------
+
+    public void encontrarDadosDoBuraco(){
+
+        new Thread(new Runnable() {
+            public void run() {
+
+                Looper.prepare();
+
+                try{
+                    PreencheDadosDoBuraco preencheDadosDoBuraco = new PreencheDadosDoBuraco(getContext());
+                    final Buraco buracoEncontrado =  preencheDadosDoBuraco.preencherDados();
+                    Log.e("buracoEcontrado", buracoEncontrado.toString());
+
+                    handler1.post(new Runnable() {
+                        public void run() {
+                            if(!(buracoEncontrado.getRua() == null)){
+                                Log.e("indo salvar", "............");
+                                salvarBuraco(buracoEncontrado);
+                            }else{
+                                Log.e("Erro buraco", "buraco esta nulo: " + buracoEncontrado.toString());
+                                Toast.makeText(getContext(), "Ocorreu erro ao encontrar dados de localização", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+
+                }catch(Exception e){
+                    Log.e("Erro Erro", "Adicionar Buraco");
+                    e.printStackTrace();
+
+                    handler1.post(new Runnable() {
+                        public void run() {
+                            Toast.makeText(getContext(), "Ocorreu erro ao encontrar dados de localização", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+
+            }
+        }).start();
+
+
+    }
+
+    public void salvarBuraco (Buraco buracoEncontrado){
+
+        BuracometroUtil buracometroUtil = new BuracometroUtil(getContext(), usuarioAtual);
+        try{
+            int jaPosssuiBuraco = buracometroUtil.inserirBuraco(buracoEncontrado);
+
+            if(jaPosssuiBuraco == 1){
+                Toast.makeText(getContext(), "Você já cadastrou esse buraco", Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(getContext(), "Buraco cadastrado!", Toast.LENGTH_SHORT).show();
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Erro ao inserir buraco", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
 
 }

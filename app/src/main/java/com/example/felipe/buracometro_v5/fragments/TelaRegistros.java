@@ -843,7 +843,6 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        // TODO Add your menu entries here
         menu.add("Mapear todos");
         super.onCreateOptionsMenu(menu, inflater);
     }

@@ -19,11 +19,11 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.example.felipe.buracometro_v5.R;
+import com.example.felipe.buracometro_v5.fragments.TelaAdicionarBuraco;
 import com.example.felipe.buracometro_v5.fragments.TelaConfiguracoes;
 import com.example.felipe.buracometro_v5.fragments.TelaEstatisticas;
 import com.example.felipe.buracometro_v5.fragments.TelaMapa;
 import com.example.felipe.buracometro_v5.fragments.TelaMenu;
-import com.example.felipe.buracometro_v5.fragments.TelaNotificaBuraco;
 import com.example.felipe.buracometro_v5.fragments.TelaRegistros;
 import com.example.felipe.buracometro_v5.modelo.Buraco;
 import com.google.android.gms.maps.MapView;
@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             mudarTelaEstatisticas(null);
 
-        } else if (id == R.id.notifica_buraco && !(f instanceof TelaNotificaBuraco)) {
+        } else if (id == R.id.notifica_buraco && !(f instanceof TelaAdicionarBuraco)) {
 
             mudarTelaNotificaBuraco(null);
 
@@ -305,11 +305,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void mudarTelaNotificaBuraco (View view){
 
         FragmentManager fr = getSupportFragmentManager();
-        TelaNotificaBuraco objetoDaTela = new TelaNotificaBuraco();
+        TelaAdicionarBuraco objetoDaTela = new TelaAdicionarBuraco();
         FragmentTransaction fragmentTransaction = fr.beginTransaction();
-        fragmentTransaction.replace(R.id.bau_de_fragments,objetoDaTela,"TelaNotificaBuraco");
+        fragmentTransaction.replace(R.id.bau_de_fragments,objetoDaTela,"TelaAdicionarBuraco");
 
-        fragmentTransaction.addToBackStack("TelaNotificaBuraco");
+        fragmentTransaction.addToBackStack("TelaAdicionarBuraco");
         fragmentTransaction.commit();
     }
 

@@ -95,5 +95,4 @@
         android:layout_below="@+id/btnDeletaLocal"
         android:layout_marginTop="30dp"/>
 
-
 </RelativeLayout>
