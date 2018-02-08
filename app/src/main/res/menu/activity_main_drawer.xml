@@ -1,38 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+
     <group android:checkableBehavior="single">
 
-        <item
-            android:id="@+id/inicio"
-            android:icon="@drawable/icone_lista"
-            android:title="Inicio" />
-        <item
-            android:id="@+id/registrados"
-            android:icon="@drawable/icone_registros"
-            android:title="Registros" />
-        <item
-            android:id="@+id/mapas"
-            android:icon="@drawable/icone_mapa"
-            android:title="Mapa" />
+        <item android:title="Informações">
 
-        <item
-            android:id="@+id/estatisticas"
-            android:icon="@drawable/icone_estatisticas"
-            android:title="Estatísticas" />
 
-        <item
-            android:id="@+id/notifica_buraco"
-            android:icon="@drawable/icone_adicionar"
-            android:title="Notificar Buraco" />
-    </group>
+            <item
+                android:id="@+id/inicio"
+                android:icon="@drawable/icone_lista"
+                android:title="Inicio" />
+            <item
+                android:id="@+id/registrados"
+                android:icon="@drawable/icone_registros"
+                android:title="Registros" />
+            <item
+                android:id="@+id/mapas"
+                android:icon="@drawable/icone_mapa"
+                android:title="Mapa" />
 
-    <item android:title="Informações">
-        <menu>
+            <item
+                android:id="@+id/estatisticas"
+                android:icon="@drawable/icone_estatisticas"
+                android:title="Estatísticas" />
+
+            <item
+                android:id="@+id/notifica_buraco"
+                android:icon="@drawable/icone_adicionar"
+                android:title="Notificar Buraco" />
+
             <item
                 android:id="@+id/configuracoes"
                 android:icon="@drawable/icone_configuracoes"
                 android:title="Configurações" />
+
+        </item>
+
+    </group>
+
+    <item android:title="Informações">
+        <menu>
             <item
                 android:id="@+id/ajuda"
                 android:icon="@drawable/icone_ajuda"
@@ -44,14 +52,26 @@
         </menu>
     </item>
 
+    <item
+        android:id="@+id/footer_spacer_1"
+        android:checkable="false"
+        android:enabled="false"
+        android:orderInCategory="200"
+        android:title="" />
+    <item
+        android:id="@+id/footer_spacer_2"
+        android:checkable="false"
+        android:enabled="false"
+        android:orderInCategory="200"
+        android:title="" />
+
     <item android:title="">
         <menu>
             <item
                 android:title="Buracometro V2.0" />
             <item
-                android:title="Desenvolvido por: Felipe Mota de Oliveira" />
+                android:title="Desenvolvido por: Felipe Mota" />
         </menu>
     </item>
-
 
 </menu>

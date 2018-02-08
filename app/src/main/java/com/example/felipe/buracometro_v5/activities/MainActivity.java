@@ -13,9 +13,11 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.felipe.buracometro_v5.R;
@@ -25,7 +27,9 @@ import com.example.felipe.buracometro_v5.fragments.TelaEstatisticas;
 import com.example.felipe.buracometro_v5.fragments.TelaMapa;
 import com.example.felipe.buracometro_v5.fragments.TelaMenu;
 import com.example.felipe.buracometro_v5.fragments.TelaRegistros;
+import com.example.felipe.buracometro_v5.listeners.OnBackPressedListener;
 import com.example.felipe.buracometro_v5.modelo.Buraco;
+import com.example.felipe.buracometro_v5.modelo.Usuario;
 import com.google.android.gms.maps.MapView;
 
 import java.util.ArrayList;
@@ -33,6 +37,8 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
+
+    Usuario usuarioAtual = new Usuario();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -48,6 +54,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        SharedPreferences settings = getBaseContext().getSharedPreferences("preferencias", 0);
+        String emailAtual = settings.getString("login","");
+        String idUsuarioAtual = settings.getString("IdLogin","");
+        String nomeAtual = settings.getString("nome","");
+
+        usuarioAtual.setEmail(emailAtual);
+        usuarioAtual.setId(idUsuarioAtual);
+        usuarioAtual.setNome(nomeAtual);
+
+        View mHeaderView = navigationView.getHeaderView(0);
+        TextView textViewUsername = (TextView) mHeaderView.findViewById(R.id.username);
+        TextView textViewEmail = (TextView) mHeaderView.findViewById(R.id.email);
+        textViewEmail.setText(usuarioAtual.getEmail());
+        textViewUsername.setText(usuarioAtual.getNome());
 
         new Thread(new Runnable() {
             @Override
@@ -71,6 +92,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //                     METODOS DE BOTÃO DE VOLTAR DO ANDROID
     //----------------------------------------------------------------------------------------
 
+    static OnBackPressedListener onBackPressedListener;
+
     @Override
     public void onBackPressed()
     {
@@ -85,16 +108,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (getFragmentManager().getBackStackEntryCount() > 0) {
                 getFragmentManager().popBackStack();
             } else {
-                super.onBackPressed();
+
+                /* Funcao para desligar o buracometro, caso o usuario pressione o botao de voltar
+                e esteja na tela Menu */
+                Fragment f = getSupportFragmentManager().findFragmentById(R.id.bau_de_fragments);
+
+                if (f instanceof TelaMenu){
+
+                    boolean handled = ((OnBackPressedListener)f).onBackPressed();
+                    if(handled){
+                        super.onBackPressed();
+                    }
+
+                }else{
+                    super.onBackPressed();
+                }
             }
-
         }
-
     }
 
 
-
-    //----------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------
     //                     METODOS DE MANIPULACAO DO POPOUP MENU
     //----------------------------------------------------------------------------------------
 
@@ -112,7 +146,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (id == R.id.action_settings)
         {
-            mudarTelaConfiguracoes(null);
+            Fragment f = getSupportFragmentManager().findFragmentById(R.id.bau_de_fragments);
+            if (!(f instanceof TelaConfiguracoes)){
+                mudarTelaConfiguracoes(null);
+            }
         }
 
         if(id == R.id.action_deslogar){

@@ -2,16 +2,19 @@ package com.example.felipe.buracometro_v5.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.LightingColorFilter;
 import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.app.Fragment;
-import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -25,23 +28,30 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.felipe.buracometro_v5.R;
+import com.example.felipe.buracometro_v5.listeners.OnBackPressedListener;
 import com.example.felipe.buracometro_v5.modelo.Buraco;
 import com.example.felipe.buracometro_v5.modelo.Usuario;
 import com.example.felipe.buracometro_v5.util.BuracometroUtil;
 import com.example.felipe.buracometro_v5.util.PreencheDadosDoBuraco;
 
+import pl.bclogic.pulsator4droid.library.PulsatorLayout;
 
-public class TelaMenu extends Fragment implements SensorEventListener {
+
+public class TelaMenu extends Fragment implements SensorEventListener, OnBackPressedListener {
 
     private static final String TEXTO_TOOLBAR = "";
+    private static final String TEXTO_SENSOR_LIGADO = "Sensor Ligado";
 
     View view;
     Button btnAddBuraco;
     Button btnLigarBuracometro;
     ImageButton btnRegistros, btnAdicionar, btnMapa, btnEstatisticas;
     ImageView   buracoImagem;
-
+    TextView texto;
+    ProgressBar progressBuracoAchado;
     ProgressBar progressLigarBuracometro;
+    PulsatorLayout pulsator;
+
     boolean apertado = false;
     boolean isBuracometroLigado = false;
     private Handler handler = new Handler();
@@ -73,6 +83,9 @@ public class TelaMenu extends Fragment implements SensorEventListener {
         btnMapa = (ImageButton) view.findViewById(R.id.btnMapa);
         btnEstatisticas = (ImageButton) view.findViewById(R.id.btnEstatisticas);
         buracoImagem = (ImageView) view.findViewById(R.id.buracometroLigado);
+        texto = (TextView) view.findViewById(R.id.texto_ligado);
+        progressBuracoAchado = (ProgressBar) view.findViewById(R.id.barra_progress_achado);
+        pulsator = (PulsatorLayout) view.findViewById(R.id.pulsator);
 
         btnAddBuraco = (Button) view.findViewById(R.id.btnManual);
 
@@ -109,7 +122,6 @@ public class TelaMenu extends Fragment implements SensorEventListener {
         });
 
 
-
         btnLigarBuracometro.setOnTouchListener(new View.OnTouchListener() {
 
             @Override
@@ -133,7 +145,9 @@ public class TelaMenu extends Fragment implements SensorEventListener {
                     case MotionEvent.ACTION_UP:
                         apertado = false;
                         progresso = 0;
-                        progressLigarBuracometro.setProgress(0);
+                        if (!isBuracometroLigado) {
+                            progressLigarBuracometro.setProgress(0);
+                        }
                         break;
                 }
 
@@ -143,6 +157,17 @@ public class TelaMenu extends Fragment implements SensorEventListener {
 
     }
 
+    @Override
+    public boolean onBackPressed() {
+        //Funcao para desligar o buracometro, caso o usuario pressione o botao de voltar
+        if (isBuracometroLigado){
+            desligarBuracometro();
+            return false;
+        }else{
+            return true;
+        }
+
+    }
 
     int progresso;
     public void ativarProgressBar (){
@@ -167,23 +192,24 @@ public class TelaMenu extends Fragment implements SensorEventListener {
                     progressLigarBuracometro.setProgress(progresso);
                     progresso++;
 
-                     if(progressLigarBuracometro.getProgress() >= 100){
+                    if(progressLigarBuracometro.getProgress() >= 100){
 
-                         handler.post(new Runnable() {
-                             public void run() {
-                                 ligarBuracometro();
-                             }});
-                         break;
-                     }
+                        handler.post(new Runnable() {
+                            public void run() {
+                                ligarBuracometro();
+                            }});
+                        break;
+                    }
                 }
 
                 progresso = 0;
                 handler.post(new Runnable() {
                     public void run() {
-                        progressLigarBuracometro.setVisibility(View.INVISIBLE);
-                        progressLigarBuracometro.setProgress(0);
+                        if (!isBuracometroLigado){
+                            progressLigarBuracometro.setVisibility(View.INVISIBLE);
+                            progressLigarBuracometro.setProgress(0);
+                        }
                     }});
-
 
                 apertado = false;
             }
@@ -192,45 +218,86 @@ public class TelaMenu extends Fragment implements SensorEventListener {
 
     }
 
+
+    //----------------------------------------------------------------------------------------
+    //              METODOS PARA MANIPULAÇÃO DA FUNCIONALIDADE BURACOMETRO
+    //----------------------------------------------------------------------------------------
+
     public void ligarBuracometro (){
 
         if (!isBuracometroLigado){
+
+            /*
+            while(apertado){
+                Log.e("TesteApertado", "TesteApertado");
+            }
+            */
+
+            //progressLigarBuracometro.getProgressDrawable().setColorFilter(Color.RED, android.graphics.PorterDuff.Mode.SRC_IN);
+            /* */
+            Drawable progressDrawable = progressLigarBuracometro.getProgressDrawable().mutate();
+            progressDrawable.setColorFilter(getResources().getColor(R.color.corRoxa), android.graphics.PorterDuff.Mode.SRC_IN);
+            progressLigarBuracometro.setProgressDrawable(progressDrawable);
+            /* */
+            //.setVisibility(View.VISIBLE);
+            //progressLigarBuracometro.setProgress(100);
+
+
             Log.e("Buracometro", "Ligado");
             btnRegistros.setVisibility(View.INVISIBLE);
             btnAdicionar.setVisibility(View.INVISIBLE);
             btnMapa.setVisibility(View.INVISIBLE);
             btnEstatisticas.setVisibility(View.INVISIBLE);
+            texto.setVisibility(View.VISIBLE);
+            texto.setText(TEXTO_SENSOR_LIGADO);
 
+            btnLigarBuracometro.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_buracometro_on_on));
             buracoImagem.setVisibility(View.VISIBLE);
-            buracoImagem.setBackgroundResource(R.drawable.img_buracometro_ligado);
-            AnimationDrawable anim = (AnimationDrawable) buracoImagem.getBackground();
-            anim.start();
+            pulsator.setVisibility(View.VISIBLE);
+
+            AnimationDrawable animationDrawable = (AnimationDrawable) buracoImagem.getBackground();
+            animationDrawable.setEnterFadeDuration(2000);
+            animationDrawable.setExitFadeDuration(4000);
+            animationDrawable.start();
+
+            /*
+            pulsator.setCount(2);
+            pulsator.setDuration(7000);
+            pulsator.setColor(getResources().getColor(R.color.corAmarela));
+            */
+            pulsator.start();
 
             ativarSensores();
             isBuracometroLigado = true;
         }
-
     }
 
     public void desligarBuracometro (){
 
         if (isBuracometroLigado){
+
             Log.e("Buracometro", "Desligado");
+
+            progressLigarBuracometro.setProgress(0);
+            Drawable progressDrawable = progressLigarBuracometro.getProgressDrawable().mutate();
+            progressDrawable.setColorFilter(getResources().getColor(R.color.corAmarela), android.graphics.PorterDuff.Mode.SRC_IN);
+            progressLigarBuracometro.setProgressDrawable(progressDrawable);
+
+            btnLigarBuracometro.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_buracometro));
             btnRegistros.setVisibility(View.VISIBLE);
             btnAdicionar.setVisibility(View.VISIBLE);
             btnMapa.setVisibility(View.VISIBLE);
             btnEstatisticas.setVisibility(View.VISIBLE);
+            texto.setText("Segure o botão para ligar o sensor");
 
             buracoImagem.setVisibility(View.INVISIBLE);
-            buracoImagem.setBackgroundResource(R.drawable.img_buracometro_ligado);
-
+            pulsator.setVisibility(View.INVISIBLE);
             desativarSensores();
             isBuracometroLigado = false;
 
         }
 
     }
-
 
     //----------------------------------------------------------------------------------------
     //                 METODOS PARA UTILIZAÇÃO DOS SENSORES DE MOVIMENTO
@@ -253,7 +320,7 @@ public class TelaMenu extends Fragment implements SensorEventListener {
         senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
-    public void desativarSensores (){
+    public void desativarSensores(){
         senSensorManager.unregisterListener(this);
     }
 
@@ -273,8 +340,13 @@ public class TelaMenu extends Fragment implements SensorEventListener {
                 if (x > 4 || y > 4)
                 {
                     Log.e("Buraco", "IDENTIFICADO");
+                    progressBuracoAchado.setVisibility(View.VISIBLE);
+                    texto.setText("Buraco identificado... Salvando...");
+                    pulsator.setDuration(2000);
+                    pulsator.setCount(4);
+                    pulsator.setColor(getResources().getColor(R.color.colorAccent));
+
                     encontrarDadosDoBuraco();
-//                  Toast.makeText(this, "Buraco identificado!", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -299,6 +371,12 @@ public class TelaMenu extends Fragment implements SensorEventListener {
 
                 Looper.prepare();
 
+                try {
+                    // ---simulate doing some work---
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 try{
                     PreencheDadosDoBuraco preencheDadosDoBuraco = new PreencheDadosDoBuraco(getContext());
                     final Buraco buracoEncontrado =  preencheDadosDoBuraco.preencherDados();
@@ -312,9 +390,17 @@ public class TelaMenu extends Fragment implements SensorEventListener {
                             }else{
                                 Log.e("Erro buraco", "buraco esta nulo: " + buracoEncontrado.toString());
                                 Toast.makeText(getContext(), "Ocorreu erro ao encontrar dados de localização", Toast.LENGTH_SHORT).show();
+                                progressBuracoAchado.setVisibility(View.INVISIBLE);
+                                texto.setText(TEXTO_SENSOR_LIGADO);
+
                             }
+                            pulsator.setDuration(7000);
+                            pulsator.setCount(3);
+                            pulsator.setColor(getResources().getColor(R.color.corRoxa));
+
                         }
                     });
+
 
                 }catch(Exception e){
                     Log.e("Erro Erro", "Adicionar Buraco");
@@ -323,6 +409,12 @@ public class TelaMenu extends Fragment implements SensorEventListener {
                     handler1.post(new Runnable() {
                         public void run() {
                             Toast.makeText(getContext(), "Ocorreu erro ao encontrar dados de localização", Toast.LENGTH_SHORT).show();
+                            progressBuracoAchado.setVisibility(View.INVISIBLE);
+                            texto.setText(TEXTO_SENSOR_LIGADO);
+                            pulsator.setDuration(7000);
+                            pulsator.setCount(3);
+                            pulsator.setColor(getResources().getColor(R.color.corRoxa));
+
                         }
                     });
                 }
@@ -349,8 +441,9 @@ public class TelaMenu extends Fragment implements SensorEventListener {
             e.printStackTrace();
             Toast.makeText(getContext(), "Erro ao inserir buraco", Toast.LENGTH_SHORT).show();
         }
+        progressBuracoAchado.setVisibility(View.INVISIBLE);
+        texto.setText(TEXTO_SENSOR_LIGADO);
+
     }
-
-
 
 }

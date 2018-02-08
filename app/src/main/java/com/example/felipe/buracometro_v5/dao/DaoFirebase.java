@@ -45,9 +45,12 @@ public class DaoFirebase {
         final double latitude = Double.parseDouble(mburaco.getLatitude());
         final double longitude = Double.parseDouble(mburaco.getLongitude());
         final Truncar t = new Truncar();
-        Log.e("lat_1", mburaco.getLatitudeLongitude());
 
         //Rever este metodo, pq nao esta nada legal... TODO
+        /*
+            Metodo abaixo foi escrito com o objetivo de validar se ha buracos no raio de 10 metros
+            como medida para diminuir chance de cadastrar buracos duplicados
+        */
 
         //-----------------------------------------------------------------------------------//
         //-----------------------------------------------------------------------------------//
@@ -430,6 +433,11 @@ public class DaoFirebase {
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+
+            @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
                 if(dataSnapshot.exists()){
@@ -443,11 +451,6 @@ public class DaoFirebase {
                 }else{
                     listener.onRetornoBuraco(null);
                 }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
 
             }
         });

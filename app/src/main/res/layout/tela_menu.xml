@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <RelativeLayout
         android:orientation="vertical"
@@ -70,18 +70,17 @@
             android:indeterminate="false"
             android:progress="0"
             android:max="100"
-            android:secondaryProgress="100"
             android:progressDrawable="@drawable/barra_progresso_circular"
             android:layout_below="@id/btnMapa"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="12dp"/>
 
 
         <Button
-            android:layout_width="97dip"
+            android:layout_width="102dip"
             android:layout_height="97dip"
             android:id="@+id/btnligarBuracometro"
-            android:background="@drawable/btn_sincronizar"
+            android:background="@drawable/btn_buracometro"
             android:layout_below="@id/progressLigarBuracometro"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="-124dp"
@@ -89,52 +88,66 @@
 
         </Button>
 
-
-        <Button
-            android:layout_width="50dip"
-            android:layout_height="50dip"
-            android:id="@+id/btnManual"
-            android:textOn="+"
-            android:background="@drawable/btn_manual_buraco"
-            android:layout_marginLeft="20dp"
-            android:layout_marginBottom="20dp"
-            android:layout_alignBottom="@id/progressLigarBuracometro"
-            android:layout_toRightOf="@id/progressLigarBuracometro"
-            android:layout_toEndOf="@id/progressLigarBuracometro"
-            android:visibility="invisible">
-
-        </Button>
-
-        <ProgressBar
-            style="?android:attr/progressBarStyleLarge"
-            android:id="@+id/barra_progress_achado"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:visibility="invisible"
-            android:layout_below="@id/btnMapa"
-            android:layout_centerHorizontal="true" />
-
         <TextView
             android:id="@+id/texto_ligado"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:text="Buracometro ligado"
-            android:textSize="18sp"
-
-            android:textColor="#ffffff"
-            android:visibility="invisible"
-            android:layout_above="@id/barra_progress_achado"
+            android:layout_marginTop="20dip"
+            android:text="Segure o botão para ligar o sensor"
+            android:textSize="12sp"
+            android:textColor="#a9f7f7f6"
+            android:visibility="visible"
+            android:layout_below="@id/btnligarBuracometro"
             android:layout_centerHorizontal="true" />
 
-        <ImageView
-            android:id="@+id/buracometroLigado"
-            android:layout_width="260dp"
-            android:layout_height="260dp"
-            android:background="@drawable/img_buracometro_ligado"
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:id="@+id/barra_progress_achado"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:visibility="invisible"
-            android:layout_alignBottom="@+id/btnSincronizar"
-            android:layout_centerHorizontal="true" />
+            android:layout_below="@id/btnligarBuracometro"
+            android:layout_marginTop="15dip"
+            android:layout_marginLeft="290dp"/>
+
+
+        <Button
+            android:id="@+id/btnManual"
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:background="@drawable/btn_manual_buraco"
+            android:textOn="+"
+            android:visibility="invisible"
+            android:layout_below="@id/progressLigarBuracometro"
+            android:layout_marginTop="-90dp"
+            android:layout_marginLeft="40dp"
+            android:textAlignment="center">
+        </Button>
+
+
+
+        <pl.bclogic.pulsator4droid.library.PulsatorLayout
+            android:id="@+id/pulsator"
+            android:layout_width="match_parent"
+            android:layout_height="330dp"
+            app:pulse_count="3"
+            app:pulse_duration="7000"
+            app:pulse_repeat="0"
+            app:pulse_color="#cb778cef"
+            app:pulse_startFromScratch="false"
+            app:pulse_interpolator="AccelerateDecelerate">
+
+            <ImageView
+                android:id="@+id/buracometroLigado"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_centerInParent="true"
+                android:visibility="invisible"
+                android:background="@drawable/degrade_list"/>
+
+        </pl.bclogic.pulsator4droid.library.PulsatorLayout>
+
+
 
 
     </RelativeLayout>
