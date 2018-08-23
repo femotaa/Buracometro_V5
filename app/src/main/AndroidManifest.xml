@@ -6,23 +6,22 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+    <uses-permission android:name="com.example.felipe.buracometro_v4.permission.MAPS.RECEIVE" />
 
     <permission
         android:name="com.example.felipe.buracometro_v4.permission.MAPS.RECEIVE"
         android:protectionLevel="signature" >
     </permission>
 
-    <uses-permission android:name="com.example.felipe.buracometro_v4.permission.MAPS.RECEIVE" />
 
     <application
+        android:name=".util.MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme2"
-        android:name="android.support.multidex.MultiDexApplication" >
+        android:theme="@style/AppTheme2">
 
         <activity android:name=".activities.TelaSplash" >
             <intent-filter>
@@ -50,6 +49,14 @@
             android:name=".activities.TelaCadastro"
             android:label="@string/app_name">
         </activity>
+
+        <receiver
+            android:name=".util.ConnectivityReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

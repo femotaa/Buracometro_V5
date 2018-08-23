@@ -117,6 +117,9 @@ public class TelaMenu extends Fragment implements SensorEventListener, OnBackPre
             @Override
             public void onClick(View v)
             {
+                Log.e("Buraco", "IDENTIFICADO");
+                progressBuracoAchado.setVisibility(View.VISIBLE);
+                texto.setText("Buraco identificado... Salvando...");
                 encontrarDadosDoBuraco();
             }
         });
@@ -278,6 +281,7 @@ public class TelaMenu extends Fragment implements SensorEventListener, OnBackPre
 
             Log.e("Buracometro", "Desligado");
 
+            progressBuracoAchado.setVisibility(View.INVISIBLE);
             progressLigarBuracometro.setProgress(0);
             Drawable progressDrawable = progressLigarBuracometro.getProgressDrawable().mutate();
             progressDrawable.setColorFilter(getResources().getColor(R.color.corAmarela), android.graphics.PorterDuff.Mode.SRC_IN);
@@ -442,7 +446,11 @@ public class TelaMenu extends Fragment implements SensorEventListener, OnBackPre
             Toast.makeText(getContext(), "Erro ao inserir buraco", Toast.LENGTH_SHORT).show();
         }
         progressBuracoAchado.setVisibility(View.INVISIBLE);
-        texto.setText(TEXTO_SENSOR_LIGADO);
+        if (isBuracometroLigado){
+            texto.setText(TEXTO_SENSOR_LIGADO);
+        }else{
+            texto.setText("Segure o botão para ligar o sensor");
+        }
 
     }
 

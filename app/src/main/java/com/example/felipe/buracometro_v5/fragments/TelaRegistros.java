@@ -34,13 +34,13 @@ import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.example.felipe.buracometro_v5.R;
-import com.example.felipe.buracometro_v5.activities.TelaLogin;
 import com.example.felipe.buracometro_v5.dao.BuracoLocalDao;
 import com.example.felipe.buracometro_v5.dao.DaoFirebase;
 import com.example.felipe.buracometro_v5.listeners.OnGetFirebaseBuracosListener;
 import com.example.felipe.buracometro_v5.listeners.RecyclerViewClickListener;
 import com.example.felipe.buracometro_v5.modelo.Buraco;
 import com.example.felipe.buracometro_v5.modelo.Usuario;
+import com.example.felipe.buracometro_v5.util.ConnectivityReceiver;
 import com.example.felipe.buracometro_v5.util.ListaBuracoRecycleAdapter;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -60,7 +60,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 
-public class TelaRegistros extends Fragment implements RecyclerViewClickListener, OnMapReadyCallback {
+public class TelaRegistros extends Fragment implements RecyclerViewClickListener, OnMapReadyCallback, ConnectivityReceiver.ConnectivityReceiverListener {
 
     private static final String TEXTO_TOOLBAR = "Registros";
 
@@ -169,8 +169,15 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
         usuarioAtual.setNome(nomeAtual);
 
         listarRegistros();
+        //checkConnection();
 
         return view;
+    }
+
+    private boolean checkConnection() {
+        return ConnectivityReceiver.isConnected();
+        //Toast.makeText(getContext(), "Conectadooo: " + isConnected, Toast.LENGTH_SHORT).show();
+        //Log.e("Conetadooo", "" + isConnected);
     }
 
     boolean b = true; //Para botao tampado/aberto
@@ -308,7 +315,6 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
                                 adapter = new ListaBuracoRecycleAdapter(getContext(), listaRecentesTampados, true, listaRecycleRegistros, TelaRegistros.this);
                                 listaRecycleRegistros.setAdapter(adapter);
                                 break;
-
                         }
                     }
 
@@ -402,6 +408,12 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
     }
 
 
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+        Toast.makeText(getContext(), "Conectado: " + isConnected, Toast.LENGTH_SHORT).show();
+        Log.e("Conetado", "" + isConnected);
+    }
+
     //----------------------------------------------------------------------------------------
     //                         METODOS PARA ATUALIZACAO DAS LISTAS
     //----------------------------------------------------------------------------------------
@@ -471,6 +483,7 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
         }
         else{
 
+            progressBar.setVisibility(View.INVISIBLE);
             atualizarTextos();
             adapter = new ListaBuracoRecycleAdapter(getContext(), listaRegistrosAberto, listaRecycleRegistros, TelaRegistros.this);
             listaRecycleRegistros.setAdapter(adapter);
@@ -539,6 +552,7 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
         }
         else{
 
+            progressBar.setVisibility(View.INVISIBLE);
             atualizarTextos();
             adapter = new ListaBuracoRecycleAdapter(getContext(), listaCriticos, listaRecycleRegistros, TelaRegistros.this, true);
             listaRecycleRegistros.setAdapter(adapter);
@@ -605,13 +619,13 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
         }
         else{
 
+            progressBar.setVisibility(View.INVISIBLE);
             atualizarTextos();
             adapter = new ListaBuracoRecycleAdapter(getContext(), listaRecentesAberto, listaRecycleRegistros, TelaRegistros.this);
             listaRecycleRegistros.setAdapter(adapter);
         }
 
     }
-
 
     public void atualizarTextos(){
 
@@ -994,7 +1008,7 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
             }
         });
 
-        mensagemInfo.setNegativeButton(" Mapear ", new DialogInterface.OnClickListener() {
+        mensagemInfo.setNegativeButton("Mapear ", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 mapearBuracosSelecionado();
             }
@@ -1123,6 +1137,4 @@ public class TelaRegistros extends Fragment implements RecyclerViewClickListener
         fragmentTransaction.commit();
 
     }
-
-
 }

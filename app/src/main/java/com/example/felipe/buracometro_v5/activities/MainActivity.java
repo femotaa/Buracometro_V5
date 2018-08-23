@@ -13,7 +13,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,11 +27,9 @@ import com.example.felipe.buracometro_v5.fragments.TelaMapa;
 import com.example.felipe.buracometro_v5.fragments.TelaMenu;
 import com.example.felipe.buracometro_v5.fragments.TelaRegistros;
 import com.example.felipe.buracometro_v5.listeners.OnBackPressedListener;
-import com.example.felipe.buracometro_v5.modelo.Buraco;
 import com.example.felipe.buracometro_v5.modelo.Usuario;
 import com.google.android.gms.maps.MapView;
 
-import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -47,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         FragmentManager fr = getSupportFragmentManager();
 
@@ -87,12 +86,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-
     //----------------------------------------------------------------------------------------
     //                     METODOS DE BOTÃO DE VOLTAR DO ANDROID
     //----------------------------------------------------------------------------------------
-
-    static OnBackPressedListener onBackPressedListener;
 
     @Override
     public void onBackPressed()
@@ -193,7 +189,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (id == R.id.action_mapear)
         {
-            TelaRegistros tr = new TelaRegistros();
             return true;
         }
 
@@ -238,7 +233,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             mudarTelaConfiguracoes(null);
 
-        } else if (id == R.id.ajuda) {
+        } else if (id == R.id.sobre) {
+
+            AlertDialog alertar;
+            AlertDialog.Builder mensagemInfo = new AlertDialog.Builder(this);
+            mensagemInfo.setTitle("Sobre");
+            mensagemInfo.setMessage("Software desenvolvido com objetivo acadêmico para a faculdade FATEC Carapicuiba.\n\n" +
+                    "Desenvolvido pelo aluno:\nFelipe Mota de Oliveira.\n" +
+                    "Direitos autorais  - 2018");
+
+            mensagemInfo.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            alertar = mensagemInfo.create();
+            alertar.show();
 
 
         }
@@ -292,30 +302,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         /**/
 
     }
-
-
-    public void mudarTelaMapasComRegistros(ArrayList<Buraco> listaRegistros, ArrayList<Buraco> listaRecentes, ArrayList<Buraco> listaCriticos ){
-
-        /** /
-        FragmentManager fr = getSupportFragmentManager();
-        TelaMapa objetoDaTela = new TelaMapa();
-        FragmentTransaction fragmentTransaction = fr.beginTransaction();
-        fragmentTransaction.replace(R.id.bau_de_fragments,objetoDaTela,"TelaMapa");
-
-        fragmentTransaction.addToBackStack("TelaMapa");
-        fragmentTransaction.commit();
-
-        TelaMapa fragment = new TelaMapa();
-        Bundle bundle = new Bundle();
-        bundle.putParcelableArrayList("listaRegistros", listaRegistros);
-        bundle.putParcelableArrayList("listaRecentes", listaRecentes);
-        bundle.putParcelableArrayList("listaCriticos", listaCriticos);
-
-        fragment.setArguments(bundle);
-        getFragmentManager().beginTransaction().replace(R.id.bau_de_fragments, fragment).commit();
-        /* */
-    }
-
 
     public void mudarTelaEstatisticas (View view){
 
